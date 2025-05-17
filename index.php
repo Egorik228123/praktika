@@ -5,12 +5,13 @@
 
     $db = new DBConnect();
 
+    $post_zapros = [
+        'name' => "sfdsaf",
+        'description' => "sdfsadf",
+        'is_public' => true,
+    ];
     
-    $name = "sfdsaf";
-    $description = "sdfsadf";
-    $isPublic = true;
-
-    $projectContext = new ProjectsContext($db,$name, $description, $isPublic);
+    $projectContext = new ProjectsContext($db,$post_zapros);
     
     $projectContext->Add();
 ?>

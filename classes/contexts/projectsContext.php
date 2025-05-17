@@ -2,8 +2,8 @@
     class ProjectsContext extends Projects {
         private DBConnect $db;
 
-        public function __construct(DBConnect $db, $name, $description, $isPublic) {
-            parent::__construct($name, $description, $isPublic); // Инициализируем родительский класс
+        public function __construct(DBConnect $db, $params) {
+            parent::__construct($params);
             $this->db = $db;
         }
 

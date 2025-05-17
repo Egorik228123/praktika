@@ -4,20 +4,14 @@
         public ?string $description;
         public bool $isPublic;
 
-        public function __construct($name, $description, $isPublic) {
-            $this->name = $name;
-            $this->description = $description;
-            $this->isPublic = $isPublic;
+        public function __construct($params) {
+            if(is_array($params)) {
+                $params = (object)$params;
+            }
+            $this->name = $params->name;
+            $this->description = $params->description;
+            $this->isPublic = $params->is_public;
         }
-
-        // public function __construct($params) {
-        //     if(is_array($params)) {
-        //         $params = (object)$params;
-        //     }
-        //     $this->name = $params->name;
-        //     $this->description = $params->description;
-        //     $this->isPublic = $params->is_public;
-        // }
 
         public function Add() {
             
