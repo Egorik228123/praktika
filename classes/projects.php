@@ -1,5 +1,6 @@
 <?php
     class Projects {
+        public int $id;
         public string $name;
         public ?string $description;
         public bool $isPublic;
@@ -11,10 +12,6 @@
             $this->name = $params->name;
             $this->description = $params->description;
             $this->isPublic = $params->is_public;
-        }
-
-        public function Add() {
-            
         }
     }
 ?>
