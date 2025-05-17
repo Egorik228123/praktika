@@ -1,5 +1,5 @@
 <?php
-    class User {
+    class Users {
         public string $name;
         public string $surname;
         public string $middlename;
@@ -15,9 +15,6 @@
             $this->password = $password;
             $this->bio = $bio;
         }
-        
-        public 
-
         public function Add() {
             
         }

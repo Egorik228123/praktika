@@ -1,10 +1,16 @@
 <?php
-    include "classes/project.php";
+    include "classes/class_db.php";
+    include "classes/projects.php";
+    include "classes/contexts/projectsContext.php";
 
-    $name = 123;
-    $isPublic = false;
-    $project = new Project($name, null, $isPublic);
+    $db = new DBConnect();
+
     
-    echo $project->name;
-    echo $project->description;
+    $name = "sfdsaf";
+    $description = "sdfsadf";
+    $isPublic = true;
+
+    $projectContext = new ProjectsContext($db,$name, $description, $isPublic);
+    
+    $projectContext->Add();
 ?>
