@@ -1,6 +1,6 @@
 <?php
     class Projects {
-        public int $id;
+        public int $id = 0;
         public string $name;
         public ?string $description;
         public bool $isPublic;
@@ -9,9 +9,10 @@
             if(is_array($params)) {
                 $params = (object)$params;
             }
+            $this->id = $params->id ?? 0;
             $this->name = $params->name;
-            $this->description = $params->description;
-            $this->isPublic = $params->is_public;
+            $this->description = $params->description ?? null;
+            $this->isPublic = $params->is_public ?? false;
         }
     }
 ?>

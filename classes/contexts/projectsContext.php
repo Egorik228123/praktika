@@ -32,19 +32,15 @@
 
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `projects` WHERE ?",
-                [
-                    $this->id
-                ]
+                "DELETE FROM `projects` WHERE id = ?",
+                [ $this->id ]
             );
         }
 
         public function Select() {
             $this->db->Query(
-                "SELECT `id`, `name`, `description`, `is_public` FROM `projects` WHERE ?",
-                [
-                    $this->id
-                ]
+                "SELECT `id`, `name`, `description`, `is_public` FROM `projects` WHERE id = ?",
+                [ $this->id ]
             );
         }
     }

@@ -38,7 +38,7 @@
 
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `users` WHERE ?",
+                "DELETE FROM `users` WHERE id = ?",
                 [
                     $this->id
                 ]
@@ -47,7 +47,7 @@
 
         public function Select() {
             $this->db->Query(
-                "SELECT `name`, `surname`, `middlename`, `email`, `bio` FROM users WHERE ?",
+                "SELECT `name`, `surname`, `middlename`, `email`, `bio` FROM users WHERE id = ?",
                 [
                     $this->id
                 ]

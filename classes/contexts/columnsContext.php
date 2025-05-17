@@ -31,7 +31,7 @@
 
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `columns` WHERE ?",
+                "DELETE FROM `columns` WHERE id = ?",
                 [
                     $this->id
                 ]
@@ -40,7 +40,7 @@
 
         public function Select() {
             $this->db->Query(
-                "SELECT `name`, `position`, `project_id` FROM `columns` WHERE ?",
+                "SELECT `name`, `position`, `project_id` FROM `columns` WHERE id = ?",
                 [
                     $this->id
                 ]

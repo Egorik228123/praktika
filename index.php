@@ -13,5 +13,14 @@
     
     $projectContext = new ProjectsContext($db,$post_zapros);
     
-    $projectContext->Add();
+    $projectContext->Insert();
+
+    // $update = [
+    //     'name' => "dadadda",
+    //     'description' => "dadadda",
+    //     'id' => 3,
+    // ];
+
+    // $projectContext = new ProjectsContext($db, $update);
+    // $projectContext->Update();
 ?>
