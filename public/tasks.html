@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доска задач Name_project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Доска задач Name_project</h1>
+        <button id="addTaskBtn">Добавить задачу</button>
+        <button id="addColumnBtn">Добавить столбец</button>
+    </header>
+
+    <div class="board">
+    
+        <div class="column" id="new">
+            <h2>Новые</h2>
+            <div class="task" draggable="true">
+                <h3>Наименование задачи</h3>
+                <p>Ответственный: Иванов Иван Иванович</p>
+                <ul>
+                    <li>Подзадача 1</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="column" id="inProgress">
+            <h2>В процессе</h2>
+            <div class="task" draggable="true">
+                <h3>Добавление столбца</h3>
+            </div>
+        </div>
+
+        <div class="column" id="review">
+            <h2>Можно проверять</h2>
+            <div class="task" draggable="true">
+                <h3>Наименование задачи</h3>
+                <p>Ответственный: Петров Петр Петрович</p>
+            </div>
+        </div>
+
+        <div class="column" id="done">
+            <h2>Готово</h2>
+            <div class="task" draggable="true">
+                <h3>Наименование задачи</h3>
+                <p>Ответственный: Сидоров Сидор Сидорович</p>
+                <ul>
+                    <li>Подзадача 1</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+   
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Добавить задачу</h2>
+            <form id="taskForm">
+                <label for="taskName">Наименование:</label>
+                <input type="text" id="taskName" required>
+
+                <label for="taskResponsible">Ответственный:</label>
+                <select id="taskResponsible">
+                    <option>Иванов Иван Иванович</option>
+                    <option>Петров Петр Петрович</option>
+                </select>
+
+                <label>Подзадачи:</label>
+                <div id="subtasks">
+                    <input type="text" class="subtask" placeholder="Название подзадачи">
+                </div>
+                <button type="button" id="addSubtask">Добавить подзадачу</button>
+
+                <button type="submit">Сохранить</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="columnModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Добавить столбец</h2>
+            <form id="columnForm">
+                <label for="columnName">Название столбца:</label>
+                <input type="text" id="columnName" required>
+                <button type="submit">Создать</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

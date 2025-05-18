@@ -1,0 +1,33 @@
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.profile-info h3 {
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+.profile-info .email {
+    color: var(--light-text);
+    margin-bottom: 10px;
+    display: block;
+}
+.last-activity {
+    color: var(--light-text);
+    font-size: 14px;
+}
+.about-section h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+.edit-profile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}

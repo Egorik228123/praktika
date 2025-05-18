@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль сотрудника</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="company-name">КАКОЕ-ТО НАЗВАНИЕ</div>
+            <div class="user-section">
+                
+                <ul class="nav-menu">
+                    <li><a href="#" class="active">Фамилия Имя Отчество</a></li>
+                    <li><a href="#" >Все сотрудники</a></li>
+                    <li><a href="#">Проекты</a></li>
+                    <li><a href="#">Мои задачи</a></li>
+                </ul>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <div class="profile-info">
+                <div class="profile-text">
+                    <h3>Фамилия Имя Отчество</h3>
+                    <span class="email">xv@xx.xx</span>
+                    <span class="last-activity">Последняя активность mm:hh dd.mm.yyyy</span>
+                </div>
+                <img src="https://via.placeholder.com/80"  class="avatar">
+            </div>
+            
+            <div class="about-section">
+                <h3>О себе</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            </div>
+            
+            <div class="edit-profile">
+                <h3 id="editProfileBtn">Редактировать профиль</h3>
+                <button class="btn">Выход</button>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <h2>Изменение личных данных</h2>
+            <div class="photo-actions">
+                <button class="btn">Обновить фото</button>
+                <button class="btn btn-danger">Удалить</button>
+            </div>
+            <div class="form-group">
+                <label>Вы</label>
+                <input type="text" placeholder="Фамилия">
+                <input type="text" placeholder="Имя">
+                <input type="text" placeholder="Отчество">
+            </div>
+            <div class="form-group">
+                <label>Данные для входа</label>
+                <input type="email" placeholder="Почта">
+                <input type="password" placeholder="Пароль">
+            </div>
+            <div class="form-group">
+                <label>Краткая информация</label>
+                <textarea placeholder="Расскажите о себе">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="deleteAccountBtn">Удалить аккаунт</button>
+                <div>
+                    <button class="btn btn-secondary" id="cancelEditBtn">Отмена</button>
+                    <button class="btn btn-primary">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal">
+        <div class="modal-content confirm-modal">
+            <h3>Вы уверены, что хотите удалить аккаунт?</h3>
+            <p>Это действие нельзя отменить. Все ваши данные будут удалены.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Отмена</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
