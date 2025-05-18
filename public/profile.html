@@ -3,32 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль сотрудника</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Система управления проектами | Профиль</title>
+    <link rel="stylesheet" href="assets/css/profile.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/board.js"></script>
+    <script src="assets/js/profile.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
-            <div class="company-name">КАКОЕ-ТО НАЗВАНИЕ</div>
+            <div class="company-name">Система управления проектами</div>
             <div class="user-section">
                 
                 <ul class="nav-menu">
-                    <li><a href="#" class="active">Фамилия Имя Отчество</a></li>
-                    <li><a href="#" >Все сотрудники</a></li>
-                    <li><a href="#">Проекты</a></li>
-                    <li><a href="#">Мои задачи</a></li>
+                    <li>
+                        <a href="profile.html" class="active">
+                            <img src="assets/img/icon-profile.png" alt="Профиль">
+                            <p>Профиль</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="users.html">
+                            <img src="assets/img/icon-users.png" alt="Все сотрудники">
+                            <p>Все сотрудники</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="projects.html">
+                            <img src="assets/img/icon-project.png" alt="Проекты">
+                            <p>Проекты</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html">
+                            <img src="assets/img/icon-task.png" alt="Мои задачи">
+                            <p>Мои задачи</p>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </aside>
         
         <main class="main-content">
             <div class="profile-info">
+                <img src="assets/img/image.jpg" class="avatar">
                 <div class="profile-text">
                     <h3>Фамилия Имя Отчество</h3>
                     <span class="email">xv@xx.xx</span>
                     <span class="last-activity">Последняя активность mm:hh dd.mm.yyyy</span>
                 </div>
-                <img src="https://via.placeholder.com/80"  class="avatar">
             </div>
             
             <div class="about-section">
@@ -38,7 +62,7 @@
             
             <div class="edit-profile">
                 <h3 id="editProfileBtn">Редактировать профиль</h3>
-                <button class="btn">Выход</button>
+                <button class="btn" onclick="">Выход</button>
             </div>
         </main>
     </div>
@@ -85,7 +109,5 @@
             </div>
         </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>

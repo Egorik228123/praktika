@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/project.css">
     <link rel="stylesheet" href="assets/css/main.css">
-    <title>Система управления проектами | Проекты</title>
+    <link rel="stylesheet" href="assets/css/project.css">
+    <title>Система управления проектами | Сотрудники</title>
 </head>
 <body>
-    <div class="container">
+        <div class="container">
         <aside class="sidebar">
             <div class="company-name">Система управления проектами</div>
             <div class="user-section">
@@ -21,13 +21,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="users.html">
+                        <a href="users.html" class="active">
                             <img src="assets/img/icon-users.png" alt="Все сотрудники">
                             <p>Все сотрудники</p>
                         </a>
                     </li>
                     <li>
-                        <a href="projects.html" class="active">
+                        <a href="projects.html">
                             <img src="assets/img/icon-project.png" alt="Проекты">
                             <p>Проекты</p>
                         </a>
@@ -41,30 +41,31 @@
                 </ul>
             </div>
         </aside>
-
-        <div class="main-content">
-            <div class="line-header">
-                <h2>Проекты</h2>
-                <button class="btn">Создать проект</button>
-            </div>
+        
+        <main class="main-content">
+            <div class="main-content">
+                <div class="line-header">
+                    <h2>Сотрудники</h2>
+                </div>
     
-            <div class="projects-container">
+                <div class="projects-container">
 
-                <div class="project-card">
-                    <span class="project-number">№1</span>
-                    <h3 class="project-title">Название проекта</h3>
-                    <p class="project-creator">Создатель: Вы</p>
-                    <button class="btn project-task-btn">Просмотреть задачи</button>
-                </div>
-                
-                <div class="project-card">
-                    <span class="project-number">№2</span>
-                    <h3 class="project-title">Название проекта</h3>
-                    <p class="project-creator">Создатель: User</p>
-                    <button class="btn project-task-btn">Просмотреть задачи</button>
+                    <div class="project-card">
+                        <span class="project-number">№1</span>
+                        <h3 class="project-title">Шадрин Егор Александрович</h3>
+                        <p class="project-creator">Совместные проекты: Нет</p>
+                        <button class="btn project-task-btn">Перейти в профиль</button>
+                    </div>
+                    
+                    <div class="project-card">
+                        <span class="project-number">№2</span>
+                        <h3 class="project-title">Манин Никита</h3>
+                        <p class="project-creator">Совместные проекты: Project_name</p>
+                        <button class="btn project-task-btn">Перейти в профиль</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>    
+        </main>
+    </div>
 </body>
 </html>

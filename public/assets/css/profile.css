@@ -6,9 +6,20 @@
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
 }
+.profile-info {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 30px;
+}
 .profile-info h3 {
-    font-size: 22px;
+    font-size: 25px;
     margin-bottom: 5px;
+}
+.avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
 }
 .profile-info .email {
     color: var(--light-text);

@@ -3,57 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Доска задач Name_project</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Система управления проектами | Доска задач</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/board.css">
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/board.js"></script>
 </head>
-<body>
-    <header>
-        <h1>Доска задач Name_project</h1>
-        <button id="addTaskBtn">Добавить задачу</button>
-        <button id="addColumnBtn">Добавить столбец</button>
-    </header>
-
-    <div class="board">
-    
-        <div class="column" id="new">
-            <h2>Новые</h2>
-            <div class="task" draggable="true">
-                <h3>Наименование задачи</h3>
-                <p>Ответственный: Иванов Иван Иванович</p>
-                <ul>
-                    <li>Подзадача 1</li>
+<body> 
+    <div class="container"> 
+        <aside class="sidebar">
+            <div class="company-name">Система управления проектами</div>
+            <div class="user-section">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="profile.html">
+                            <img src="assets/img/icon-profile.png" alt="Профиль">
+                            <p>Профиль</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="users.html">
+                            <img src="assets/img/icon-users.png" alt="Все сотрудники">
+                            <p>Все сотрудники</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="projects.html">
+                            <img src="assets/img/icon-project.png" alt="Проекты">
+                            <p>Проекты</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tasks.html" class="active">
+                            <img src="assets/img/icon-task.png" alt="Мои задачи">
+                            <p>Мои задачи</p>
+                        </a>
+                    </li>
                 </ul>
             </div>
-        </div>
-
-        <div class="column" id="inProgress">
-            <h2>В процессе</h2>
-            <div class="task" draggable="true">
-                <h3>Добавление столбца</h3>
+        </aside>
+        <div class="main-content">
+            <div class="line-header">
+                <h2>Проекты</h2>
+                <button class="btn">Добавить задачу</button>
             </div>
-        </div>
 
-        <div class="column" id="review">
-            <h2>Можно проверять</h2>
-            <div class="task" draggable="true">
-                <h3>Наименование задачи</h3>
-                <p>Ответственный: Петров Петр Петрович</p>
-            </div>
-        </div>
+            <div class="board">
+                <!-- Существующие столбцы -->
+                <div class="column">
+                    <h2>Новые</h2>
+                    <div class="task" draggable="true">
+                        <h3>Наименование задачи</h3>
+                        <p>Ответственный: Сидоров Сидор Сидорович</p>
+                        <button class="task-btn">Описание задачи</button>
+                    </div>
+                </div>
 
-        <div class="column" id="done">
-            <h2>Готово</h2>
-            <div class="task" draggable="true">
-                <h3>Наименование задачи</h3>
-                <p>Ответственный: Сидоров Сидор Сидорович</p>
-                <ul>
-                    <li>Подзадача 1</li>
-                </ul>
+                <div class="column">
+                    <h2>В процессе</h2>
+                    <div class="task" draggable="true">
+                        <h3>Наименование задачи</h3>
+                        <p>Ответственный: Сидоров Сидор Сидорович</p>
+                        <button class="task-btn">Описание задачи</button>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h2>Можно проверять</h2>
+                    <div class="task" draggable="true">
+                        <h3>Наименование задачи</h3>
+                        <p>Ответственный: Сидоров Сидор Сидорович</p>
+                        <button class="task-btn">Описание задачи</button>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <h2>Готово</h2>
+                    <div class="task" draggable="true">
+                        <h3>Наименование задачи</h3>
+                        <p>Ответственный: Сидоров Сидор Сидорович</p>
+                        <button class="task-btn">Описание задачи</button>
+                    </div>
+                </div>
+
+                <!-- Кнопка добавления столбца -->
+                <div class="add-column">
+                    <span>+</span>
+                </div>
             </div>
         </div>
     </div>
-
-   
+    
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -79,7 +119,6 @@
         </div>
     </div>
 
-
     <div id="columnModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -91,7 +130,5 @@
             </form>
         </div>
     </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
