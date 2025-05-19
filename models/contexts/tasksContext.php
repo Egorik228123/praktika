@@ -1,5 +1,5 @@
 <?php
-    class ColumnsContext extends Columns {
+    class TasksContext extends Tasks {
         private DBConnect $db;
 
         public function __construct(DBConnect $db, $params) {
@@ -9,21 +9,24 @@
 
         public function Insert() {
             $this->db->QueryExecute(
-                "INSERT INTO columns (name, position, projectId) VALUES (?, ?, ?)",
+                "INSERT INTO tasks (name, description, due_date, column_id) VALUES (?, ?, ?, ?)",
                 [
                     $this->name,
-                    $this->position,
-                    $this->projectId
+                    $this->description,
+                    $this->due_date,
+                    $this->column_id                
                 ]
             );
         }
-
+        
         public function Update() {
             $this->db->QueryExecute(
-                "UPDATE columns SET `name`= ?, `position`= ? WHERE id = ?",
+                "UPDATE tasks SET name = ?, description = ?, due_date = ?, column_id = ? WHERE id = ?",
                 [
                     $this->name,
-                    $this->position,
+                    $this->description,
+                    $this->due_date,
+                    $this->column_id,
                     $this->id
                 ]
             );
@@ -31,19 +34,15 @@
 
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `columns` WHERE id = ?",
-                [
-                    $this->id
-                ]
+                "DELETE FROM tasks WHERE id = ?",
+                [ $this->id ]
             );
-        }
+        } 
 
         public function Select() {
             $this->db->Query(
-                "SELECT `name`, `position`, `project_id` FROM `columns` WHERE id = ?",
-                [
-                    $this->id
-                ]
+                "SELECT * FROM tasks WHERE id = ?",
+                [ $this->id ]
             );
         }
     }

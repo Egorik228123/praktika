@@ -1,5 +1,5 @@
 <?php
-    class usersContext extends Users {
+    class UsersContext extends Users {
         private DBConnect $db;
 
         public function __construct(DBConnect $db, $params) {
@@ -9,7 +9,7 @@
 
         public function Insert() {
             $this->db->QueryExecute(
-                "INSERT INTO users (`name`, `surname`, `middlename`, `email`, `password`, `bio`) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO `users` (`name`, `surname`, `middlename`, `email`, `password`, `bio`) VALUES (?, ?, ?, ?, ?, ?)",
                 [
                     $this->name,
                     $this->surname,
@@ -23,7 +23,9 @@
 
         public function Update() {
             $this->db->QueryExecute(
-                "UPDATE users SET name = ?, surname = ?, middlename = ?, email = ?, password = ?, bio = ? WHERE id = ?",
+                "UPDATE `users`
+                 SET `name` = ?, `surname` = ?, `middlename` = ?, `email` = ?, `password` = ?, `bio` = ?
+                 WHERE `id` = ?",
                 [
                     $this->name,
                     $this->surname,
@@ -38,19 +40,15 @@
 
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `users` WHERE id = ?",
-                [
-                    $this->id
-                ]
+                "DELETE FROM `users` WHERE `id` = ?",
+                [ $this->id ]
             );
         }
 
         public function Select() {
             $this->db->Query(
-                "SELECT `name`, `surname`, `middlename`, `email`, `bio` FROM users WHERE id = ?",
-                [
-                    $this->id
-                ]
+                "SELECT `name`, `surname`, `middlename`, `email`, `bio` FROM `users` WHERE `id` = ?",
+                [ $this->id ]
             );
         }
     }

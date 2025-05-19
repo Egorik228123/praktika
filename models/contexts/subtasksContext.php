@@ -1,5 +1,6 @@
 <?php
-    class ProjectsContext extends Projects {
+    class SubtasksContext extends Subtasks 
+    {
         private DBConnect $db;
 
         public function __construct(DBConnect $db, $params) {
@@ -7,39 +8,41 @@
             $this->db = $db;
         }
 
-        public function Insert() {
+        public function Insert() 
+        {
             $this->db->QueryExecute(
-                "INSERT INTO projects (name, description, is_public) VALUES (?, ?, ?)",
+                "INSERT INTO `subtasks` (`name`, `description`, `due_date`, `task_id`) VALUES (?, ?, ?, ?)",
                 [
                     $this->name,
                     $this->description,
-                    $this->isPublic ? 1 : 0
+                    $this->due_date,
+                    $this->task_id                
                 ]
             );
         }
 
         public function Update() {
             $this->db->QueryExecute(
-                "UPDATE projects SET name = ?, description = ?, is_public = ? WHERE id = ?",
+                "UPDATE `subtasks` SET `name` = ?, `description` = ?, `due_date` = ?, `task_id` = ? WHERE `id` = ?",
                 [
                     $this->name,
                     $this->description,
-                    $this->isPublic ? 1 : 0,
+                    $this->due_date,
+                    $this->task_id,
                     $this->id
                 ]
             );
         }
-
         public function Delete() {
             $this->db->QueryExecute(
-                "DELETE FROM `projects` WHERE id = ?",
+                "DELETE FROM `subtasks` WHERE `id` = ?",
                 [ $this->id ]
             );
-        }
-
+        } 
+        
         public function Select() {
             $this->db->Query(
-                "SELECT `id`, `name`, `description`, `is_public` FROM `projects` WHERE id = ?",
+                "SELECT * FROM `subtasks` WHERE `id` = ?",
                 [ $this->id ]
             );
         }
