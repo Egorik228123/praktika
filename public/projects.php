@@ -15,25 +15,25 @@
                 
                 <ul class="nav-menu">
                     <li>
-                        <a href="profile.html">
+                        <a href="profile.php">
                             <img src="assets/img/icon-profile.png" alt="Профиль">
                             <p>Профиль</p>
                         </a>
                     </li>
                     <li>
-                        <a href="users.html">
+                        <a href="users.php">
                             <img src="assets/img/icon-users.png" alt="Все сотрудники">
                             <p>Все сотрудники</p>
                         </a>
                     </li>
                     <li>
-                        <a href="projects.html" class="active">
+                        <a href="projects.php" class="active">
                             <img src="assets/img/icon-project.png" alt="Проекты">
                             <p>Проекты</p>
                         </a>
                     </li>
                     <li>
-                        <a href="tasks.html">
+                        <a href="tasks.php">
                             <img src="assets/img/icon-task.png" alt="Мои задачи">
                             <p>Мои задачи</p>
                         </a>

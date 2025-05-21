@@ -1,3 +1,23 @@
+<?php
+    session_start();
+    if(!isset($_SESSION['user'])) {
+        header('Location: login.php');
+        exit;
+    }
+
+    include __DIR__ . "../../src/classes/controllers/UsersController.php";
+    $controller = new UsersController();
+    
+    $user = $controller->GetUserById($_SESSION['user']['id']);
+    if(!$user['success']) {
+        foreach($user['errors'] as $error) {
+            echo "<p>$error</p>";
+        }
+    }
+    else {
+        $user = $user['data'];
+    }
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -18,25 +38,25 @@
                 
                 <ul class="nav-menu">
                     <li>
-                        <a href="profile.html" class="active">
+                        <a href="profile.php" class="active">
                             <img src="assets/img/icon-profile.png" alt="Профиль">
                             <p>Профиль</p>
                         </a>
                     </li>
                     <li>
-                        <a href="users.html">
+                        <a href="users.php">
                             <img src="assets/img/icon-users.png" alt="Все сотрудники">
                             <p>Все сотрудники</p>
                         </a>
                     </li>
                     <li>
-                        <a href="projects.html">
+                        <a href="projects.php">
                             <img src="assets/img/icon-project.png" alt="Проекты">
                             <p>Проекты</p>
                         </a>
                     </li>
                     <li>
-                        <a href="tasks.html">
+                        <a href="tasks.php">
                             <img src="assets/img/icon-task.png" alt="Мои задачи">
                             <p>Мои задачи</p>
                         </a>
@@ -49,15 +69,15 @@
             <div class="profile-info">
                 <img src="assets/img/image.jpg" class="avatar">
                 <div class="profile-text">
-                    <h3>Фамилия Имя Отчество</h3>
-                    <span class="email">xv@xx.xx</span>
+                    <h3><?= $user->surname . ' ' . $user->name . ' ' . $user->middlename?></h3>
+                    <span class="email"><?= $user->email?></span>
                     <span class="last-activity">Последняя активность mm:hh dd.mm.yyyy</span>
                 </div>
             </div>
             
             <div class="about-section">
                 <h3>О себе</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <p><?= $user->bio ?></p>
             </div>
             
             <div class="edit-profile">

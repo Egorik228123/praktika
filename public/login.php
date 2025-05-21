@@ -1,3 +1,24 @@
+<?php
+    session_start();
+    include __DIR__ . "../../src/classes/controllers/UsersController.php";
+    $controller = new UsersController();
+    if($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $user = $controller->AuthorizeUser($_POST['email'], $_POST['password']);
+        if($user['success']) {
+            $_SESSION['user'] = [
+                'name' => $user['data']->name,
+                'id' => $user['data']->id,
+            ];
+            header("Location: profile.php");
+        }
+        else {
+            foreach($user['errors'] as $error) {
+                echo "<p>$error</p>";
+            }
+        }
+    }
+
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -22,7 +43,7 @@
                 </form>
             </div>
             <button type="submit" form="login">Авторизоваться</button>
-            <p>Нет аккаунта? <a href="register.html">Создать</a></p>
+            <p>Нет аккаунта? <a href="register.php">Создать</a></p>
         </div>
     </main>
 </body>

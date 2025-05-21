@@ -34,7 +34,7 @@
                 </form>
             </div>
             <button type="submit" form="register">Зарегистрироваться</button>
-            <p>Есть аккаунт? <a href="login.html">Войти</a></p>
+            <p>Есть аккаунт? <a href="login.php">Войти</a></p>
         </div>
     </main>
 </body>
