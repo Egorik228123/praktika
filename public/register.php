@@ -1,3 +1,20 @@
+<?php
+    session_start();
+    include __DIR__ . "../../src/classes/controllers/UsersController.php";
+    $controller = new UsersController();
+    if($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $user = $controller->RegisterUser($_POST);
+        if($user['success']) {
+            header("Location: login.php");
+        }
+        else {
+            foreach($user['errors'] as $error) {
+                echo "<p>$error</p>";
+            }
+        }
+    }
+
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>

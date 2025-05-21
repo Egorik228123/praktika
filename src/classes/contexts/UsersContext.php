@@ -1,6 +1,6 @@
 <?php
     require_once __DIR__ . "/../models/Users.php";
-    require_once __DIR__ . "/../class_db.php";
+    require_once __DIR__ . "/../DB.php";
 
     class UsersContext {
         private DBConnect $db;
@@ -9,7 +9,7 @@
             $this->db = $db;
         }
 
-        public function UpdateUser(int $userId, array $fields): void {
+        public function updateUser(int $userId, array $fields): void {
             try {
                 $allowedFields = ['name', 'surname', 'middlename', 'email', 'password', 'bio'];
                 $updates = [];
@@ -37,7 +37,7 @@
             }
         }
 
-        public function DeleteUser(int $userId): int|string {
+        public function deleteUser(int $userId): int|string {
             try {
                 $affected_rows = $this->db->QueryExecute(
                     "DELETE FROM `users` WHERE `id` = ?",
@@ -50,7 +50,7 @@
             }
         }
 
-        public function GetById(int $userId): ?Users {
+        public function getById(int $userId): ?Users {
             try {
                 $result = $this->db->Query(
                     "SELECT * FROM `users` WHERE `id` = ?",
@@ -67,7 +67,7 @@
             }
         }
 
-        public function GetFIO(int $userId): ?array {
+        public function getFIO(int $userId): ?array {
             try {
                 $result = $this->db->Query(
                     "SELECT name, surname, middlename FROM users WHERE id = ?",
@@ -80,7 +80,7 @@
             }
         }
 
-        public function GetAllUsers(): array {
+        public function getAllUsers(): array {
             try {
                 $result = $this->db->Query("SELECT * FROM users");
                 return $result->fetch_all(MYSQLI_ASSOC);
@@ -90,7 +90,7 @@
             }
         }
 
-        public function GetAllProjects(int $userId): array {
+        public function getAllProjects(int $userId): array {
             try {
                 $result = $this->db->Query(
                     "SELECT p.* FROM projects p
@@ -105,7 +105,7 @@
             }
         }
 
-        public function Authorize(string $email, string $password): ?Users {
+        public function authorize(string $email, string $password): ?Users {
             try {
                 $result = $this->db->Query(
                     "SELECT * FROM users WHERE email = ?",
@@ -124,7 +124,7 @@
             }
         }
 
-        public function Register(array $userData) {
+        public function register(array $userData) {
             try {
                 // Проверка существующего email
                 $result = $this->db->Query(
@@ -166,9 +166,9 @@
                 return $newUser;
 
                 }
-                catch (mysqli_sql_exception $e) {
-                    throw new Exception("Ошибка регистрации: " . $e->getMessage());
-                }
+            catch (mysqli_sql_exception $e) {
+                throw new Exception("Ошибка регистрации: " . $e->getMessage());
             }
         }
+    }
 ?>

@@ -6,7 +6,6 @@
         $user = $controller->AuthorizeUser($_POST['email'], $_POST['password']);
         if($user['success']) {
             $_SESSION['user'] = [
-                'name' => $user['data']->name,
                 'id' => $user['data']->id,
             ];
             header("Location: profile.php");

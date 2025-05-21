@@ -14,7 +14,7 @@
             $this->errors[] = $message;
         }
         
-        public function DeleteUser(int $userId) {
+        public function deleteUser(int $userId) {
             try {
                 if ($userId <= 0) {
                     $this->addError("Некорректный ID пользователя");
@@ -27,7 +27,7 @@
                     return ['success' => false, 'errors' => $this->errors];
                 }
 
-                $result = $this->usersContext->DeleteUser($userId);
+                $result = $this->usersContext->deleteUser($userId);
                 return ['success' => true, 'data' => $result];
             }
             catch(Exception $e) {
@@ -37,7 +37,7 @@
 
         }
 
-        public function UpdateUser(int $userId, array $userData) {
+        public function updateUser(int $userId, array $userData) {
             try {
                 if ($userId <= 0) {
                     $this->addError("Некорректный ID");
@@ -64,7 +64,7 @@
             }
         }
 
-        public function GetUserById(int $userId) {
+        public function getUserById(int $userId) {
             try {
                 if ($userId <= 0) {
                     $this->addError("Некорректный ID");
@@ -85,7 +85,7 @@
             }
         }
 
-        public function GetUserFIO(int $userId): array {
+        public function getUserFIO(int $userId): array {
             try {
                 if ($userId <= 0) {
                     $this->addError("Некорректный ID");
@@ -106,7 +106,7 @@
             }
         }
 
-        public function GetAllUsers(): array {
+        public function getAllUsers(): array {
             try {
                 $users = $this->usersContext->GetAllUsers();
                 return ['success' => true, 'data' => $users];
@@ -117,7 +117,7 @@
             }   
         }
 
-        public function GetUserProjects(int $userId): array {
+        public function getUserProjects(int $userId): array {
             try {
                 if ($userId <= 0) {
                     $this->addError("Некорректный ID");
@@ -133,7 +133,7 @@
             }
         }
 
-        public function AuthorizeUser(string $email, string $password): array {
+        public function authorizeUser(string $email, string $password): array {
             try {
                 if (empty($email) || empty($password)) {
                     $this->addError("Заполните email и пароль");
@@ -155,7 +155,7 @@
         }
 
         // Регистрация
-        public function RegisterUser(array $userData) {
+        public function registerUser(array $userData) {
             try {
                 $required = ['name', 'surname', 'email', 'password'];
                 foreach ($required as $field) {
