@@ -37,6 +37,10 @@
             return $result;
         }
 
+        public function lastInsertId(): int {
+            return $this->db->insert_id;
+        }
+
         public function paramTypes($params) {
             $types = '';
             foreach ($params as $param) {
