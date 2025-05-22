@@ -1,21 +1,15 @@
 <?php
     session_start();
-    if(!isset($_SESSION['user'])) {
-        header('Location: login.php');
-        exit;
+
+    if (!isset($_SESSION['user'])) {
+        header("Location: login.php");
+        exit();
     }
 
-    include __DIR__ . "../../src/classes/controllers/UsersController.php";
-    $controller = new UsersController();
-    
-    $user = $controller->GetUserById($_SESSION['user']['id']);
-    if(!$user['success']) {
-        foreach($user['errors'] as $error) {
-            echo "<p>$error</p>";
-        }
-    }
-    else {
-        $user = $user['data'];
+    if(isset($_POST['logout'])) {
+        session_destroy();
+        header("Location: login.php");
+        exit;
     }
 ?>
 <!DOCTYPE html>
@@ -26,9 +20,26 @@
     <title>Система управления проектами | Профиль</title>
     <link rel="stylesheet" href="assets/css/profile.css">
     <link rel="stylesheet" href="assets/css/main.css">
-    <script src="assets/js/common.js"></script>
+    <!-- <script src="assets/js/common.js"></script>
     <script src="assets/js/board.js"></script>
-    <script src="assets/js/profile.js"></script>
+    <script src="assets/js/profile.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="../src/ajax.js"></script>
+    <script>
+        function getUser() {
+            let Data = new FormData();
+            Data.append('action', 'getUserById');
+            Data.append('id', <?=$_SESSION['user']['id']?>);
+            ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
+                if(response.success) {
+                    document.querySelector(".profile-text h3").textContent = `${response.data.name} ${response.data.surname} ${response.data.middlename}`;
+                    document.querySelector(".profile-text .email").textContent = response.data.email;  
+                    document.querySelector(".about-section p").textContent = response.data.bio;  
+                }
+            });
+        }
+        getUser();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -69,20 +80,22 @@
             <div class="profile-info">
                 <img src="assets/img/image.jpg" class="avatar">
                 <div class="profile-text">
-                    <h3><?= $user->surname . ' ' . $user->name . ' ' . $user->middlename?></h3>
-                    <span class="email"><?= $user->email?></span>
+                    <h3></h3>
+                    <span class="email"></span>
                     <span class="last-activity">Последняя активность mm:hh dd.mm.yyyy</span>
                 </div>
             </div>
             
             <div class="about-section">
                 <h3>О себе</h3>
-                <p><?= $user->bio ?></p>
+                <p></p>
             </div>
             
             <div class="edit-profile">
                 <h3 id="editProfileBtn">Редактировать профиль</h3>
-                <button class="btn" onclick="">Выход</button>
+                <form action="" method="post">
+                    <button class="btn" name="logout">Выход</button>
+                </form>
             </div>
         </main>
     </div>

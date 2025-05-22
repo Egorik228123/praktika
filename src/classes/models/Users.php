@@ -5,7 +5,7 @@
         public string $surname;
         public ?string $middlename = null;
         public string $email;
-        public string $password;
+        public ?string $password;
         public ?string $bio = null;
 
         public function __construct($params) {
@@ -18,7 +18,7 @@
             $this->surname = $params->surname;
             $this->middlename = $params->middlename ?? null;
             $this->email = $params->email;
-            $this->password = $params->password;
+            $this->password = $params->password ?? null;
             $this->bio = $params->bio ?? null;
         }
     }

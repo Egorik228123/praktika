@@ -53,7 +53,7 @@
         public function getById(int $userId): ?Users {
             try {
                 $result = $this->db->Query(
-                    "SELECT * FROM `users` WHERE `id` = ?",
+                    "SELECT `id`, `name`, `surname`, `middlename`, `email`, `bio` FROM `users` WHERE `id` = ?",
                     [$userId]
                 );
 
@@ -108,7 +108,7 @@
         public function authorize(string $email, string $password): ?Users {
             try {
                 $result = $this->db->Query(
-                    "SELECT * FROM users WHERE email = ?",
+                    "SELECT id, email, password FROM users WHERE email = ?",
                     [$email]
                 );
                 $userData = $result->fetch_assoc();
@@ -117,6 +117,7 @@
                     return null;
                 }
 
+                $userData = $this->getById($userData['id']);
                 return new Users($userData);
             }
             catch(mysqli_sql_exception $e) {

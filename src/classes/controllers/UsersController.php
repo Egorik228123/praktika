@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+header('Content-Type: application/json; charset=utf-8');
     require_once __DIR__ . "/../contexts/UsersContext.php";
 
     class UsersController {
@@ -31,7 +34,7 @@
                 return ['success' => true, 'data' => $result];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера при удалении: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера при удалении: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка сервера']];
             }
 
@@ -59,7 +62,7 @@
                 return ['success' => true];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера при обновлении: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера при обновлении: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка сервера']];
             }
         }
@@ -80,7 +83,7 @@
                 return ['success' => true, 'data' => $user];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка сервера']];
             }
         }
@@ -101,7 +104,7 @@
                 return ['success' => true, 'data' => $fio];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка сервера']];
             }
         }
@@ -112,7 +115,7 @@
                 return ['success' => true, 'data' => $users];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка загрузки списка']];
             }   
         }
@@ -128,7 +131,7 @@
                 return ['success' => true, 'data' => $projects];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка загрузки проектов']];
             }
         }
@@ -146,10 +149,15 @@
                     return ['success' => false, 'errors' => $this->errors];
                 }
 
+                session_start();
+                $_SESSION['user'] = [
+                    'id' => $user->id,
+                ];
+
                 return ['success' => true, 'data' => $user];
             }
             catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage() . "\n", 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка авторизации']];
             }
         }
@@ -180,9 +188,43 @@
                     $this->addError($e->getMessage());
                     return ['success' => false, 'errors' => $this->errors];
                 }
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../error.log");
+                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка сервера']];
             }
         }
+
+        public static function handleRequest() {
+            $controller = new self();
+            $action = $_POST['action'] ?? '';
+
+            try {
+                switch ($action) {
+                    case 'authorize':
+                        $response = $controller->authorizeUser($_POST['email'], $_POST['password']);
+                        break;
+                    case 'register':
+                        $response = $controller->registerUser($_POST);
+                        break;
+                    case 'getUserById':
+                        $response = $controller->getUserById($_POST['id']);
+                        break;
+                    case 'update':
+                        $response = $controller->updateUser($_POST['user_id'], $_POST);
+                        break;
+                    case 'delete':
+                        $response = $controller->deleteUser($_POST['user_id']);
+                        break;
+                    default:
+                        $response = ['success' => false, 'errors' => ['Неверное действие']];
+                }
+            }
+            catch (Exception $e) {
+                $response = ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+
+            echo json_encode($response);
+            exit();
+        }
     }
+    UsersController::handleRequest();
 ?>
