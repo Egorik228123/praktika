@@ -136,9 +136,6 @@
                     throw new Exception("Пользователь с таким email уже существует");
                 }
 
-                // Хеширование пароля
-                $passwordHash = password_hash($userData['password'], PASSWORD_DEFAULT);
-
                 // Вставка пользователя
                 $sql = "INSERT INTO users 
                         (name, surname, middlename, email, password, bio)
@@ -148,7 +145,7 @@
                     $userData['surname'],
                     $userData['middlename'] ?? null,
                     $userData['email'],
-                    $passwordHash,
+                    password_hash($userData['password'], PASSWORD_DEFAULT),
                     $userData['bio'] ?? null
                 ]);
 
@@ -159,14 +156,8 @@
 
                 // Получение созданного пользователя
                 $userId = $this->db->lastInsertId();
-                $newUser = $this->GetById($userId);
-                if (!$newUser) {
-                    throw new Exception("Ошибка получения данных пользователя");
-                }
-
-                return $newUser;
-
-                }
+                return $userId;
+            }
             catch (mysqli_sql_exception $e) {
                 throw new Exception("Ошибка регистрации: " . $e->getMessage());
             }

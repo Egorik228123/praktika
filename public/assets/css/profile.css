@@ -42,3 +42,7 @@
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
 }
+#editProfileBtn {
+    color: var(--danger-color);
+    cursor: pointer;
+}

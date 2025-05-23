@@ -1,6 +1,7 @@
 <?php
     require_once __DIR__ . "/../contexts/TasksContext.php";
-
+    header('Content-Type: application/json; charset=utf-8');
+    
     class TasksController {
         private TasksContext $tasksContext;
         public array $errors = [];
@@ -84,7 +85,7 @@
             }
         }
 
-        public function getTasks(int $columnId): array {
+        public function getTasksByColumn(int $columnId): array {
             try {
                 $tasks = $this->tasksContext->getTasksByColumn($columnId);
                 return ['success' => true, 'data' => $tasks];
@@ -94,5 +95,56 @@
                 return ['success' => false, 'errors' => [$e->getMessage()]];
             }
         }
+
+        public static function handleRequest() {
+            $controller = new self();
+            $action = $_POST['action'] ?? '';
+
+            try {
+                switch ($action) {
+                    case 'createTask':
+                        $response = $controller->createTask([
+                            'name' => $_POST['name'],
+                            'description' => $_POST['description'] ?? null,
+                            'due_date' => $_POST['due_date'] ?? null,
+                            'column_id' => $_POST['column_id']
+                        ]);
+                        break;
+                    case 'updateTask':
+                        $response = $controller->updateTask(
+                            $_POST['task_id'], [
+                                'name' => $_POST['name'] ?? null,
+                                'description' => $_POST['description'] ?? null,
+                                'due_date' => $_POST['due_date'] ?? null
+                            ]
+                        );
+                        break;
+                    case 'deleteTask':
+                        $response = $controller->deleteTask($_POST['task_id']);
+                        break;
+                    case 'moveTask':
+                        $response = $controller->moveTask(
+                            $_POST['task_id'],
+                            $_POST['new_column_id']
+                        );
+                        break;
+                    case 'assignUser':
+                        $response = $controller->assignUser($_POST['task_id'], $_POST['user_id']);
+                        break;
+                    case 'getTasksByColumn':
+                        $response = $controller->getTasksByColumn($_POST['column_id']);
+                        break;
+                    default:
+                        $response = ['success' => false, 'errors' => ['Неверное действие']];
+                }
+            }
+            catch (Exception $e) {
+                $response = ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+
+            echo json_encode($response);
+            exit();
+        }
     }
+    TasksController::handleRequest();
 ?>

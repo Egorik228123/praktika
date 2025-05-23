@@ -1,50 +1,57 @@
 <?php
-    class ColumnsContext extends Columns {
+    require_once __DIR__ . "/../models/Columns.php";
+    require_once __DIR__ . "/../DB.php";
+
+    class ColumnsContext {
         private DBConnect $db;
 
-        public function __construct(DBConnect $db, $params) {
-            parent::__construct($params);
+        public function __construct(DBConnect $db) {
             $this->db = $db;
         }
 
-        public function Insert() {
-            $this->db->QueryExecute(
-                "INSERT INTO columns (name, position, projectId) VALUES (?, ?, ?)",
-                [
-                    $this->name,
-                    $this->position,
-                    $this->projectId
-                ]
-            );
+        // Создание столбца
+        public function createColumn(array $columnData): int {
+            $sql = "INSERT INTO columns (name, position, project_id) VALUES (?, ?, ?)";
+            return $this->db->QueryExecute($sql, [
+                $columnData['name'],
+                $columnData['position'],
+                $columnData['project_id']
+            ]);
         }
 
-        public function Update() {
-            $this->db->QueryExecute(
-                "UPDATE columns SET `name`= ?, `position`= ? WHERE id = ?",
-                [
-                    $this->name,
-                    $this->position,
-                    $this->id
-                ]
-            );
+        // Обновление столбца
+        public function updateColumn(int $columnId, array $fields): void {
+            $allowed = ['name', 'position'];
+            $updates = [];
+            $params = [];
+            
+            foreach ($fields as $key => $value) {
+                if (in_array($key, $allowed)) {
+                    $updates[] = "`$key` = ?";
+                    $params[] = $value;
+                }
+            }
+            
+            if (empty($updates))
+                throw new Exception("Нет полей для обновления");
+            
+            $sql = "UPDATE columns SET " . implode(', ', $updates) . " WHERE id = ?";
+            $params[] = $columnId;
+            $this->db->QueryExecute($sql, $params);
         }
 
-        public function Delete() {
-            $this->db->QueryExecute(
-                "DELETE FROM `columns` WHERE id = ?",
-                [
-                    $this->id
-                ]
-            );
+        // Удаление столбца
+        public function deleteColumn(int $columnId): void {
+            $this->db->QueryExecute("DELETE FROM columns WHERE id = ?", [$columnId]);
         }
 
-        public function Select() {
-            $this->db->Query(
-                "SELECT `name`, `position`, `project_id` FROM `columns` WHERE id = ?",
-                [
-                    $this->id
-                ]
+        // Получение столбцов проекта
+        public function getColumnsByProject(int $projectId): array {
+            $result = $this->db->Query(
+                "SELECT * FROM columns WHERE project_id = ? ORDER BY position",
+                [$projectId]
             );
+            return $result->fetch_all(MYSQLI_ASSOC);
         }
     }
 ?>

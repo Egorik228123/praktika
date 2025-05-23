@@ -7,7 +7,7 @@ function ajax(url, data = {}, success) {
         contentType: false,
         success: success,
         error: function() {
-            console_log("Ошибка соединения");
+            console.log("Ошибка соединения");
         }
     });
 }

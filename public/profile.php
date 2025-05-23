@@ -20,9 +20,9 @@
     <title>Система управления проектами | Профиль</title>
     <link rel="stylesheet" href="assets/css/profile.css">
     <link rel="stylesheet" href="assets/css/main.css">
-    <!-- <script src="assets/js/common.js"></script>
+    <script src="assets/js/common.js"></script>
     <script src="assets/js/board.js"></script>
-    <script src="assets/js/profile.js"></script> -->
+    <script src="assets/js/profile.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../src/ajax.js"></script>
     <script>
@@ -92,7 +92,7 @@
             </div>
             
             <div class="edit-profile">
-                <h3 id="editProfileBtn">Редактировать профиль</h3>
+                <h4 id="editProfileBtn">Редактировать профиль</h4>
                 <form action="" method="post">
                     <button class="btn" name="logout">Выход</button>
                 </form>

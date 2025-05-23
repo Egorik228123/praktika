@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация модалок
     setupModal('taskModal', '#addTaskBtn', '.close');
     setupModal('columnModal', '#addColumnBtn', '.close');
+    setupModal('taskDetailsModal', '.task-btn', '.close');
+    setupModal('createTaskModal', '.add-column', '.close');
 
     // Добавление подзадачи
     document.getElementById('addSubtask').addEventListener('click', () => {
@@ -13,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Создание столбца
-    document.getElementById('columnForm').addEventListener('submit', (e) => {
+    document.getElementById('add-column').addEventListener('submit', (e) => {
         e.preventDefault();
         const columnName = document.getElementById('columnName').value;
         const columnHTML = `
@@ -25,22 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('columnModal').style.display = 'none';
     });
 
-    // Drag and drop
-    const initDragAndDrop = () => {
-        document.querySelectorAll('.task').forEach(task => {
-            task.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', e.target.id);
-            });
-        });
-
-        document.querySelectorAll('.column').forEach(column => {
-            column.addEventListener('dragover', (e) => e.preventDefault());
-            column.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const taskId = e.dataTransfer.getData('text/plain');
-                e.currentTarget.appendChild(document.getElementById(taskId));
-            });
-        });
-    };
-    initDragAndDrop();
+    // Создание задачи
+    document.getElementById('createTaskForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const taskName = document.getElementById('createTaskName').value;
+        const taskResponsible = document.getElementById('createTaskResponsible').value;
+        const taskDescription = document.getElementById('createTaskDescription').value;
+        const taskDeadline = document.getElementById('createTaskDeadline').value;
+        
+        const taskHTML = `
+            <div class="task" draggable="true">
+                <h3>${taskName}</h3>
+                <p>Ответственный: ${taskResponsible}</p>
+                <button class="task-btn">Описание задачи</button>
+            </div>
+        `;
+        
+        // Добавляем задачу в первый столбец (или другой по вашему выбору)
+        document.querySelector('.column').insertAdjacentHTML('beforeend', taskHTML);
+        document.getElementById('createTaskModal').style.display = 'none';
+    });
 });

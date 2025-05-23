@@ -62,7 +62,25 @@
 
         public function getTasksByColumn(int $columnId): array {
             $result = $this->db->Query(
-                "SELECT * FROM tasks WHERE column_id = ?",
+                "SELECT 
+                    tasks.id AS id,
+                    tasks.name AS name,
+                    CONCAT(users.name, ' ', users.surname) AS assignee
+                FROM 
+                    tasks
+                LEFT JOIN (
+                    SELECT 
+                        task_id,
+                        MIN(user_id) AS first_user_id
+                    FROM 
+                        task_assignees
+                    GROUP BY 
+                        task_id
+                ) AS first_assignee ON tasks.id = first_assignee.task_id
+                LEFT JOIN 
+                    users ON first_assignee.first_user_id = users.id
+                WHERE 
+                    tasks.column_id = ?;",
                 [$columnId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);

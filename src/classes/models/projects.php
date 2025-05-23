@@ -3,7 +3,7 @@
         public int $id = 0;
         public string $name;
         public ?string $description;
-        public bool $isPublic;
+        public ?bool $isPublic;
 
         public function __construct($params) {
             if(is_array($params)) {

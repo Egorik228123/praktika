@@ -1,7 +1,5 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-header('Content-Type: application/json; charset=utf-8');
+    header('Content-Type: application/json; charset=utf-8');
     require_once __DIR__ . "/../contexts/UsersContext.php";
 
     class UsersController {
@@ -88,27 +86,6 @@ header('Content-Type: application/json; charset=utf-8');
             }
         }
 
-        public function getUserFIO(int $userId): array {
-            try {
-                if ($userId <= 0) {
-                    $this->addError("Некорректный ID");
-                    return ['success' => false, 'errors' => $this->errors];
-                }
-
-                $fio = $this->usersContext->GetFIO($userId);
-                if (!$fio) {
-                    $this->addError("Данные не найдены");
-                    return ['success' => false, 'errors' => $this->errors];
-                }
-
-                return ['success' => true, 'data' => $fio];
-            }
-            catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
-                return ['success' => false, 'errors' => ['Ошибка сервера']];
-            }
-        }
-
         public function getAllUsers(): array {
             try {
                 $users = $this->usersContext->GetAllUsers();
@@ -118,22 +95,6 @@ header('Content-Type: application/json; charset=utf-8');
                 error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
                 return ['success' => false, 'errors' => ['Ошибка загрузки списка']];
             }   
-        }
-
-        public function getUserProjects(int $userId): array {
-            try {
-                if ($userId <= 0) {
-                    $this->addError("Некорректный ID");
-                    return ['success' => false, 'errors' => $this->errors];
-                }
-
-                $projects = $this->usersContext->GetAllProjects($userId);
-                return ['success' => true, 'data' => $projects];
-            }
-            catch(Exception $e) {
-                error_log("Ошибка сервера: " . $e->getMessage(), 3, "../../error.log");
-                return ['success' => false, 'errors' => ['Ошибка загрузки проектов']];
-            }
         }
 
         public function authorizeUser(string $email, string $password): array {
@@ -162,7 +123,6 @@ header('Content-Type: application/json; charset=utf-8');
             }
         }
 
-        // Регистрация
         public function registerUser(array $userData) {
             try {
                 $required = ['name', 'surname', 'email', 'password'];
@@ -208,11 +168,8 @@ header('Content-Type: application/json; charset=utf-8');
                     case 'getUserById':
                         $response = $controller->getUserById($_POST['id']);
                         break;
-                    case 'update':
-                        $response = $controller->updateUser($_POST['user_id'], $_POST);
-                        break;
-                    case 'delete':
-                        $response = $controller->deleteUser($_POST['user_id']);
+                    case 'getAllUsers':
+                        $response = $controller->getAllUsers();
                         break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];
