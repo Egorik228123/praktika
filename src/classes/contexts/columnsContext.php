@@ -48,7 +48,7 @@
         // Получение столбцов проекта
         public function getColumnsByProject(int $projectId): array {
             $result = $this->db->Query(
-                "SELECT * FROM columns WHERE project_id = ? ORDER BY position",
+                "SELECT * FROM columns WHERE project_id = ? ORDER BY id",
                 [$projectId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);

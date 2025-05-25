@@ -26,10 +26,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../src/ajax.js"></script>
     <script>
+        const userId = <?=$_SESSION['user']['id']?>;
         function getUser() {
             let Data = new FormData();
             Data.append('action', 'getUserById');
-            Data.append('id', <?=$_SESSION['user']['id']?>);
+            Data.append('id', userId);
             ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
                 if(response.success) {
                     document.querySelector(".profile-text h3").textContent = `${response.data.name} ${response.data.surname} ${response.data.middlename}`;
@@ -66,12 +67,6 @@
                             <p>Проекты</p>
                         </a>
                     </li>
-                    <li>
-                        <a href="tasks.php">
-                            <img src="assets/img/icon-task.png" alt="Мои задачи">
-                            <p>Мои задачи</p>
-                        </a>
-                    </li>
                 </ul>
             </div>
         </aside>
@@ -103,10 +98,6 @@
     <div class="modal" id="profileModal">
         <div class="modal-content">
             <h2>Изменение личных данных</h2>
-            <div class="photo-actions">
-                <button class="btn">Обновить фото</button>
-                <button class="btn btn-danger">Удалить</button>
-            </div>
             <div class="form-group">
                 <label>Вы</label>
                 <input type="text" placeholder="Фамилия">
@@ -114,20 +105,12 @@
                 <input type="text" placeholder="Отчество">
             </div>
             <div class="form-group">
-                <label>Данные для входа</label>
-                <input type="email" placeholder="Почта">
-                <input type="password" placeholder="Пароль">
-            </div>
-            <div class="form-group">
                 <label>Краткая информация</label>
-                <textarea placeholder="Расскажите о себе">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</textarea>
+                <textarea placeholder="Расскажите о себе"></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-danger" id="deleteAccountBtn">Удалить аккаунт</button>
-                <div>
-                    <button class="btn btn-secondary" id="cancelEditBtn">Отмена</button>
-                    <button class="btn btn-primary">Сохранить</button>
-                </div>
+                <button class="btn btn-primary">Сохранить</button>
             </div>
         </div>
     </div>
@@ -137,7 +120,6 @@
             <h3>Вы уверены, что хотите удалить аккаунт?</h3>
             <p>Это действие нельзя отменить. Все ваши данные будут удалены.</p>
             <div class="modal-actions">
-                <button class="btn btn-secondary" id="cancelDeleteBtn">Отмена</button>
                 <button class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
             </div>
         </div>

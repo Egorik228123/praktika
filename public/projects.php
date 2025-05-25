@@ -15,13 +15,14 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <script src="assets/js/common.js"></script>
     <script src="assets/js/projects.js"></script>
+    <script src="assets/js/search.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../src/ajax.js"></script>
     <title>Система управления проектами | Проекты</title>
     
     <script>
         let allProjects = [];
-        let currentUserId = <?= $_SESSION['user_id'] ?? 'null' ?>;
+        let currentUserId = <?= $_SESSION['user']['id'] ?? 'null' ?>;
 
         function getProjects() {
             const formData = new FormData();
@@ -31,6 +32,9 @@
                 if(response.success) {
                     allProjects = response.data;
                     renderProjects(allProjects);
+                    document.querySelector('.search-input').addEventListener('input', function(e) {
+                        searchUsers(e.target.value);
+                    });
                 }
             });
         }
@@ -78,6 +82,7 @@
             formData.append('name', name);
             formData.append('description', description);
             formData.append('is_public', is_public);
+            formData.append('user_id', currentUserId);
             ajax('../src/classes/controllers/ProjectsController.php', formData, function(response) {
                 if(response.success) {
                     window.location.href = `tasks.php?projectId=${response.data.project_id}`;
@@ -110,12 +115,6 @@
                         <a href="projects.php" class="active">
                             <img src="assets/img/icon-project.png" alt="Проекты">
                             <p>Проекты</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="tasks.php">
-                            <img src="assets/img/icon-task.png" alt="Мои задачи">
-                            <p>Мои задачи</p>
                         </a>
                     </li>
                 </ul>

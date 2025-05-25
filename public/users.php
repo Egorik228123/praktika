@@ -79,12 +79,6 @@
                             <p>Проекты</p>
                         </a>
                     </li>
-                    <li>
-                        <a href="tasks.php">
-                            <img src="assets/img/icon-task.png" alt="Мои задачи">
-                            <p>Мои задачи</p>
-                        </a>
-                    </li>
                 </ul>
             </div>
         </aside>

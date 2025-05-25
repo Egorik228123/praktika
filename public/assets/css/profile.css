@@ -46,3 +46,15 @@
     color: var(--danger-color);
     cursor: pointer;
 }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-group input {
+    padding: 5px 10px;
+    width: 200px;
+}
+.modal-actions {
+    margin-top: 15px;
+}

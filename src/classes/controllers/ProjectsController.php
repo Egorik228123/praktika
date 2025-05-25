@@ -114,36 +114,6 @@
 
             try {
                 switch ($action) {
-                    // case 'createProject':
-                    //     $response = $controller->createProject([
-                    //         'name' => $_POST['name'],
-                    //         'description' => $_POST['description'] ?? null,
-                    //         'is_public' => isset($_POST['is_public'])
-                    //     ]);
-                    //     break;
-                    // case 'updateProject':
-                    //     $response = $controller->updateProject(
-                    //         $_POST['project_id'],
-                    //         [
-                    //             'name' => $_POST['name'] ?? null,
-                    //             'description' => $_POST['description'] ?? null,
-                    //             'is_public' => $_POST['is_public'] ?? null
-                    //         ]
-                    //     );
-                    //     break;
-                    // case 'deleteProject':
-                    //     $response = $controller->deleteProject($_POST['project_id']);
-                    //     break;
-                    // case 'addMember':
-                    //     $response = $controller->addMember(
-                    //         $_POST['project_id'],
-                    //         $_POST['user_id'],
-                    //         $_POST['role']
-                    //     );
-                    //     break;
-                    // case 'getMembers':
-                    //     $response = $controller->getMembers($_POST['project_id']);
-                    //     break;
                     case 'getPublicProjects':
                         $response = $controller->getPublicProjects();
                         break;

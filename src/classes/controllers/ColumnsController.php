@@ -86,7 +86,7 @@
                         $response = $controller->createColumn([
                             'name' => $_POST['name'],
                             'position' => $_POST['position'],
-                            'project_id' => $_POST['project_id']
+                            'project_id' => $_POST['project_id'],
                         ]);
                         break;
 

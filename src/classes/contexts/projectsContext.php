@@ -28,13 +28,16 @@
                     [$name, $position, $projectId]
                 );
             }
+
+            // Создание роли
+            $this->db->QueryExecute(
+                "INSERT INTO project_roles (id_project, id_user, role) VALUES (?, ?, ?)",
+                [$projectId, $projectData['user_id'], 'creator']
+            );
             
             return $projectId;
         }
 
-        public function checkAccess(int $projectId, array $fields): void {
-
-        }
         // Обновление данных проекта
         public function updateProject(int $projectId, array $fields): void {
             $allowed = ['name', 'description', 'is_public'];
@@ -96,18 +99,19 @@
         public function getPublicProjects(): array {
             $result = $this->db->Query(
                 "SELECT 
-                    p.name AS name,
-                    u.id AS creator_id,
-                    CONCAT(u.surname, ' ', u.name) AS creator_name,
-                    p.id AS project_id
+                    p.name AS 'name',
+                    CONCAT(u.surname, ' ', u.name, ' ', u.middlename) AS 'creator_name',
+                    u.id AS 'creator_id',
+                    p.id AS 'project_id'
                 FROM 
                     projects p
-                INNER JOIN 
-                        project_roles pr ON p.id = pr.id_project
-                INNER JOIN 
-                        users u ON pr.id_user = u.id
+                JOIN 
+                    project_roles pr ON p.id = pr.id_project
+                JOIN 
+                    users u ON pr.id_user = u.id
                 WHERE 
-                    p.is_public = 1 AND pr.role = 'creator';"
+                    p.is_public = 1
+                    AND pr.role = 'creator'"
             );
             return $result->fetch_all(MYSQLI_ASSOC);
         }

@@ -5,6 +5,10 @@
         header("Location: login.php");
         exit();
     }
+    if($_GET == null) {
+        header("Location: projects.php");
+        exit;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -20,7 +24,9 @@
     <script src="assets/js/board.js"></script>
     <script>
         let allUsers = [];
-
+        let countColumns = 0;
+        let firstColumn = 0;
+        let projectId = <?=$_GET['projectId'] ?? 0?>;
         function getTasks(id) {
             const Data = new FormData();
             Data.append('action', 'getTasksByColumn');
@@ -33,12 +39,49 @@
             });
         }
 
+        function getProject() {
+            const projectName = document.getElementById('projectName');
+            projectName.textContent = '';
+            const Data = new FormData();
+            Data.append('action', 'getProjectById');
+            Data.append('id', projectId);
+
+            ajax('../src/classes/controllers/ProjectsController.php', Data, function(response) {
+                if(response.success)
+                    projectName.textContent = `Проект ${response.data.name}`;
+            });
+        }
+        
+
+        function createColumn() {
+            const columnName = document.getElementById("columnName").value.trim();
+            if (columnName == '') return;
+
+            const Data = new FormData();
+            Data.append('action', 'createColumn');
+            Data.append('name', columnName);
+            Data.append('project_id', projectId);
+            Data.append('position', countColumns);
+
+            ajax('../src/classes/controllers/ColumnsController.php', Data, function(response) {
+                if (response.success) {
+                    document.getElementById("columnName").value = ''; // Очистить поле
+                    getColumns(); // Обновить столбцы
+                    closeModal('columnModal'); // Закрыть модальное окно
+                }
+            });
+        }
+
         function renderColumns(columns) {
             const container = document.querySelector(".board");
             container.innerHTML = '';
-            
             if(columns.length === 0) {
-                container.innerHTML = '<div class="no-results">Столбцы не найдены. Создайте новый</div>';
+                container.innerHTML = `
+                    <div id="add-column" class="add-column">
+                        <span>+</span>
+                    </div>
+                `;
+                setupModal('columnModal', '.add-column', '.close');
                 return;
             }
             
@@ -49,15 +92,21 @@
                 container.appendChild(card);
                 getTasks(column.id);
             });
+            const createColumn = document.createElement('div');
+            createColumn.id = 'add-column';
+            createColumn.className = 'add-column';
+            createColumn.innerHTML = `<span>+</span>`;
+            container.appendChild(createColumn);
+            setupModal('columnModal', '.add-column', '.close');
+            getProject();
+            return;
         }
 
-        function renderTask(tasks) {
-            const container = document.querySelector(".column");
-            
+        function renderTask(tasks) {  
             if(tasks.length === 0) {
                 return;
             }
-            
+            const container = document.querySelector(".column");
             tasks.forEach((task) => {
                 const card = document.createElement('div');
                 card.className = 'task';
@@ -74,11 +123,32 @@
         function getColumns() {
             const Data = new FormData();
             Data.append('action', 'getColumnsByProject');
-            Data.append('project_id', <?=$_GET['projectId']?>);
+            Data.append('project_id', projectId);
             
             ajax('../src/classes/controllers/ColumnsController.php', Data, function(response) {
                 if(response.success) {
+                    countColumns += 1;
+                    if(firstColumn == null) {
+                        firstColumn = response.data.id;
+                    }
                     renderColumns(response.data);
+                }
+            });
+        }
+
+        function createTask() {
+            const name = document.getElementById('createTaskName').value;
+            const description = document.getElementById('createTaskDescription').value;
+            const createTaskDeadline = document.getElementById('createTaskDeadline').value;
+            const Data = new FormData();
+            Data.append('action', 'getColumnsByProject');
+            Data.append('name', name);
+            Data.append('description', description);
+            Data.append('due_date', createTaskDeadline);
+            Data.append('column_id', firstColumn);
+            ajax('../src/classes/controllers/TasksController.php', Data, function(response) {
+                if(response.success) {
+                    getTasks(firstColumn);
                 }
             });
         }
@@ -109,63 +179,18 @@
                             <p>Проекты</p>
                         </a>
                     </li>
-                    <li>
-                        <a href="tasks.php" class="active">
-                            <img src="assets/img/icon-task.png" alt="Мои задачи">
-                            <p>Мои задачи</p>
-                        </a>
-                    </li>
                 </ul>
             </div>
         </aside>
         <div class="main-content">
             <div class="line-header">
-                <h2>Проекты</h2>
+                <h2 id="projectName">Проект</h2>
                 <button id="addTaskBtn" class="btn">Добавить задачу</button>
             </div>
 
             <div class="board">
-                <!-- Существующие столбцы -->
-                <div class="column">
-                    <h2>Новые</h2>
-                    <div class="task" draggable="true">
-                        <h3>Наименование задачи</h3>
-                        <p>Ответственный: Сидоров Сидор Сидорович</p>
-                        <button class="task-btn">Описание задачи</button>
-                    </div>
-                </div>
 
-                <!-- Кнопка добавления столбца -->
-                <div id="add-column" class="add-column">
-                    <span>+</span>
-                </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Модальное окно добавления задачи -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Добавить задачу</h2>
-            <form id="taskForm">
-                <label for="taskName">Наименование:</label>
-                <input type="text" id="taskName" required>
-
-                <label for="taskResponsible">Ответственный:</label>
-                <select id="taskResponsible">
-                    <option>Иванов Иван Иванович</option>
-                    <option>Петров Петр Петрович</option>
-                </select>
-
-                <label>Подзадачи:</label>
-                <div id="subtasks">
-                    <input type="text" class="subtask" placeholder="Название подзадачи">
-                </div>
-                <button type="button" id="addSubtask">Добавить подзадачу</button>
-
-                <button type="submit">Сохранить</button>
-            </form>
         </div>
     </div>
 
@@ -177,7 +202,7 @@
             <form id="columnForm">
                 <label for="columnName">Название столбца:</label>
                 <input type="text" id="columnName" required>
-                <button type="submit">Создать</button>
+                <button type="button" class="btn" onclick="createColumn()">Создать</button>
             </form>
         </div>
     </div>
@@ -209,7 +234,7 @@
     </div>
 
     <!-- Модальное окно создания задачи -->
-    <div id="createTaskModal" class="modal">
+    <div id="taskModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Создать задачу</h2>
@@ -219,19 +244,19 @@
                     <input type="text" id="createTaskName" required>
                     
                     <label for="createTaskDescription">Описание:</label>
-                    <textarea id="createTaskDescription" required></textarea>
+                    <textarea id="createTaskDescription"></textarea>
                     
                     <label for="createTaskResponsible">Ответственный:</label>
-                    <select id="createTaskResponsible" required>
+                    <select id="createTaskResponsible">
                         <option>Иванов Иван Иванович</option>
                         <option>Петров Петр Петрович</option>
                         <option>Сидоров Сидор Сидорович</option>
                     </select>
                     
                     <label for="createTaskDeadline">Дедлайн:</label>
-                    <input type="date" id="createTaskDeadline" required>
+                    <input type="date" id="createTaskDeadline">
                     
-                    <button type="submit">Создать задачу</button>
+                    <button class="btn">Создать задачу</button>
                 </div>
             </form>
         </div>
