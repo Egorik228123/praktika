@@ -1,0 +1,119 @@
+* {
+    font-family: sans-serif;
+}
+body {
+    margin: 0;
+}
+h1 {
+    margin: 0;
+    margin-bottom: 50px;
+    text-align: center;
+    font-size: 28px;
+}
+h2 {
+    margin: 0;
+    margin-bottom: 20px;
+    font-size: 23px;
+}
+main {
+    background-color: #fafafa;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container {
+    width: 100%;
+    max-width: 500px;
+}
+.form_container {
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.12);
+    background-color: #fff;
+    padding: 35px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+/* form */
+
+form {
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    gap: 12px;
+}
+.grid form{
+    max-width: 450px;
+    grid-template-columns: repeat(2, 1fr);
+}
+.grid form div:nth-child(1),
+.grid form div:nth-child(4) {
+    grid-column: 1 / -1;
+}
+
+/* input */
+
+.form_container input {
+    box-sizing: border-box;
+    background-color: #fafafa;
+    border: 1.25px solid #e9e9e9;
+    border-radius: 3px;
+    width: 100%;
+    font-size: 15px;
+    padding: 13px 20px;
+}
+
+/* Placeholder */
+
+.form_container input::placeholder {
+    opacity: 0.4;
+    letter-spacing: normal;
+}
+.form_container input[type="password"] {
+    letter-spacing: 3px;
+}
+
+/* submit button */
+
+button {
+    background-color: #0e8bf1;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 13px 38px;
+    font-size: 15px;
+    margin: 0 auto;
+    margin-top: 40px;
+    display: block;
+    transition: background ease-in-out 0.25s;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0d7bd6;
+}
+p {
+    margin: 0;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 15px;
+}
+@media (max-width: 540px) {
+    .grid form {
+        grid-template-columns: 1fr;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    h2 {
+        font-size: 19px;
+    }
+    .container {
+        display: block;
+        margin: 0 20px;
+    }
+    .form_container {
+        padding: 1.5rem;
+    }
+}
