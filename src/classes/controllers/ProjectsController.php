@@ -99,11 +99,39 @@
 
         public function getProjectById(int $projectId): array {
             try {
-                $projects = $this->projectsContext->getProjectById($projectId);
-                return ['success' => true, 'data' => $projects];
+                $project = $this->projectsContext->getProjectById($projectId);
+                return ['success' => true, 'data' => $project];
             }
             catch (Exception $e) {
                 error_log("Ошибка получения проекта: " . $e->getMessage());
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Упрощенное добавление участника (роль по умолчанию 'user')
+        public function addProjectMember(int $projectId, int $userId): array {
+            try {
+                $this->projectsContext->addMember($projectId, $userId, 'user');
+                return ['success' => true];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+        
+        public function getProjectMembers(int $projectId): array {
+            try {
+                $members = $this->projectsContext->getMembers($projectId);
+                return ['success' => true, 'data' => $members];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        public function removeMember(int $projectId, int $userId): array {
+            try {
+                $this->projectsContext->removeMember($projectId, $userId);
+                return ['success' => true];
+            } catch (Exception $e) {
                 return ['success' => false, 'errors' => [$e->getMessage()]];
             }
         }
@@ -122,6 +150,34 @@
                         break;
                     case 'createProject':
                         $response = $controller->createProject($_POST);
+                        break;
+                    case 'updateProject':
+                        $response = $controller->updateProject(
+                            $_POST['project_id'],
+                            [
+                                'name' => $_POST['name'],
+                                'description' => $_POST['description'] ?? null,
+                                'is_public' => isset($_POST['is_public']) ? 1 : 0
+                            ]
+                        );
+                        break;
+                    case 'addProjectMember':
+                        $response = $controller->addProjectMember(
+                            $_POST['project_id'],
+                            $_POST['user_id']
+                        );
+                        break;
+                    case 'getMembers':
+                        $response = $controller->getMembers($_POST['project_id']);
+                        break;
+                    case 'getProjectMembers':
+                        $response = $controller->getProjectMembers($_POST['project_id']);
+                        break;
+                    case 'removeMember':
+                        $response = $controller->removeMember(
+                            $_POST['project_id'],
+                            $_POST['user_id']
+                        );
                         break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];

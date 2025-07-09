@@ -46,7 +46,16 @@
     font-size: 12px;
     margin-top: auto;
 }
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
+.checkbox-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
 @media (max-width: 550px) {
     .projects-header {
         flex-direction: column;

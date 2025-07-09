@@ -117,8 +117,7 @@
                     return null;
                 }
 
-                $userData = $this->getById($userData['id']);
-                return new Users($userData);
+                return $this->getById($userData['id']);
             }
             catch(mysqli_sql_exception $e) {
                 throw new Exception("Ошибка авторизации: " . $e->getMessage());
@@ -156,10 +155,26 @@
 
                 // Получение созданного пользователя
                 $userId = $this->db->lastInsertId();
-                return $userId;
+                return $this->getById($userId);
             }
             catch (mysqli_sql_exception $e) {
                 throw new Exception("Ошибка регистрации: " . $e->getMessage());
+            }
+        }
+
+        // Получение участников проекта
+        public function getProjectMembers(int $projectId): array {
+            try {
+                $result = $this->db->Query(
+                    "SELECT u.id, u.name, u.surname 
+                    FROM project_roles pr
+                    JOIN users u ON pr.id_user = u.id
+                    WHERE pr.id_project = ?",
+                    [$projectId]
+                );
+                return $result->fetch_all(MYSQLI_ASSOC);
+            } catch (Exception $e) {
+                throw new Exception("Ошибка получения участников проекта: " . $e->getMessage());
             }
         }
     }

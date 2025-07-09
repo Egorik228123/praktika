@@ -171,6 +171,15 @@
                     case 'getAllUsers':
                         $response = $controller->getAllUsers();
                         break;
+                        
+case 'updateUser':
+    $response = $controller->updateUser($_POST['id'], [
+        'surname' => $_POST['surname'],
+        'name' => $_POST['name'],
+        'middlename' => $_POST['middlename'],
+        'bio' => $_POST['bio']
+    ]);
+    break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];
                 }

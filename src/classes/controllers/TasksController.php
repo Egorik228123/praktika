@@ -15,22 +15,6 @@
             $this->errors[] = $message;
         }
 
-        public function createTask(array $taskData): array {
-            try {
-                if (empty($taskData['name']) || empty($taskData['column_id'])) {
-                    $this->addError("Обязательные поля: название и столбец");
-                    return ['success' => false, 'errors' => $this->errors];
-                }
-
-                $taskId = $this->tasksContext->createTask($taskData);
-                return ['success' => true, 'data' => ['task_id' => $taskId]];
-            }
-            catch (Exception $e) {
-                error_log("Ошибка создания задачи: " . $e->getMessage());
-                return ['success' => false, 'errors' => [$e->getMessage()]];
-            }
-        }
-
         public function updateTask(int $taskId, array $taskData): array {
             try {
                 if ($taskId <= 0) {
@@ -38,7 +22,20 @@
                     return ['success' => false, 'errors' => $this->errors];
                 }
 
-                $this->tasksContext->updateTask($taskId, $taskData);
+                $this->tasksContext->updateTask($taskId, [
+                    'name' => $taskData['name'] ?? null,
+                    'description' => $taskData['description'] ?? null,
+                    'due_date' => $taskData['due_date'] ?? null
+                ]);
+
+                // Обработка ответственных
+                $assignees = json_decode($_POST['assignees'] ?? '[]', true);
+                $this->tasksContext->updateAssignees($taskId, $assignees);
+
+                // Обработка подзадач
+                $subtasks = json_decode($_POST['subtasks'] ?? '[]', true);
+                $this->tasksContext->updateSubtasks($taskId, $subtasks);
+
                 return ['success' => true];
             }
             catch (Exception $e) {
@@ -96,6 +93,101 @@
             }
         }
 
+        public function getTaskDetails(int $taskId): array {
+            try {
+                $task = $this->tasksContext->getTaskWithDetails($taskId);
+                $assignees = $this->tasksContext->getTaskAssignees($taskId);
+                $subtasks = $this->tasksContext->getTaskSubtasks($taskId);
+                
+                return [
+                    'success' => true,
+                    'data' => [
+                        'task' => $task,
+                        'assignees' => $assignees,
+                        'subtasks' => $subtasks
+                    ]
+                ];
+            } catch (Exception $e) {
+                error_log("Ошибка получения деталей задачи: " . $e->getMessage());
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        public function createTask(array $taskData): array {
+            try {
+                // Добавить текущее время к дате
+                if (!empty($taskData['due_date'])) {
+                    $taskData['due_date'] .= ' ' . date('H:i:s');
+                }
+                
+                $taskId = $this->tasksContext->createTask($taskData);
+        
+                // Добавляем ответственных
+                if (!empty($taskData['assignees'])) {
+                    $assignees = json_decode($taskData['assignees'], true);
+                    foreach ($assignees as $userId) {
+                        $this->tasksContext->addAssignee($taskId, $userId);
+                    }
+                }
+                
+                return ['success' => true, 'data' => ['task_id' => $taskId]];
+            } catch (Exception $e) {
+                error_log("Ошибка создания задачи: " . $e->getMessage());
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Добавление ответственного
+        public function addAssignee(int $taskId, int $userId): array {
+            try {
+                $this->tasksContext->addAssignee($taskId, $userId);
+                return ['success' => true];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Удаление ответственного
+        public function removeAssignee(int $taskId, int $userId): array {
+            try {
+                $this->tasksContext->removeAssignee($taskId, $userId);
+                return ['success' => true];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Создание подзадачи
+        public function createSubtask(array $subtaskData): array {
+            try {
+                $subtaskId = $this->tasksContext->createSubtask($subtaskData);
+                return ['success' => true, 'data' => ['subtask_id' => $subtaskId]];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Удаление подзадачи
+        public function deleteSubtask(int $subtaskId): array {
+            try {
+                $this->tasksContext->deleteSubtask($subtaskId);
+                return ['success' => true];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Перемещение всех задач между столбцами
+        public function moveAllTasks(int $fromColumnId, int $toColumnId): array {
+            try {
+                $this->tasksContext->moveAllTasks($fromColumnId, $toColumnId);
+                return ['success' => true];
+            } catch (Exception $e) {
+                return ['success' => false, 'errors' => [$e->getMessage()]];
+            }
+        }
+
+        // Обработчик запросов
         public static function handleRequest() {
             $controller = new self();
             $action = $_POST['action'] ?? '';
@@ -112,7 +204,8 @@
                         break;
                     case 'updateTask':
                         $response = $controller->updateTask(
-                            $_POST['task_id'], [
+                            $_POST['task_id'], 
+                            [
                                 'name' => $_POST['name'] ?? null,
                                 'description' => $_POST['description'] ?? null,
                                 'due_date' => $_POST['due_date'] ?? null
@@ -133,6 +226,28 @@
                         break;
                     case 'getTasksByColumn':
                         $response = $controller->getTasksByColumn($_POST['column_id']);
+                        break;
+                    case 'getTaskDetails':
+                        $response = $controller->getTaskDetails($_POST['task_id']);
+                        break;
+                    case 'addAssignee':
+                        $response = $controller->addAssignee($_POST['task_id'], $_POST['user_id']);
+                        break;
+                    case 'removeAssignee':
+                        $response = $controller->removeAssignee($_POST['task_id'], $_POST['user_id']);
+                        break;
+                    case 'createSubtask':
+                        $response = $controller->createSubtask([
+                            'name' => $_POST['name'],
+                            'description' => $_POST['description'] ?? null,
+                            'task_id' => $_POST['task_id']
+                        ]);
+                        break;
+                    case 'deleteSubtask':
+                        $response = $controller->deleteSubtask($_POST['subtask_id']);
+                        break;
+                    case 'moveAllTasks':
+                        $response = $controller->moveAllTasks($_POST['from_column_id'], $_POST['to_column_id']);
                         break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];

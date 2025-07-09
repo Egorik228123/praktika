@@ -47,7 +47,7 @@
                 card.innerHTML = `
                     <span class="project-number">№${user.id}</span>
                     <h3 class="project-title">${user.name} ${user.surname} ${user.middlename}</h3>
-                    <button class="btn project-task-btn">Перейти в профиль</button>
+                    
                 `;
                 container.appendChild(card);
             });

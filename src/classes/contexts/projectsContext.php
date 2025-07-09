@@ -9,13 +9,12 @@
             $this->db = $db;
         }
 
-        // Создание проекта и столбцов
         public function createProject(array $projectData): int {
             $this->db->QueryExecute(
                 "INSERT INTO projects (name, description, is_public) VALUES (?, ?, ?)", [
                 $projectData['name'],
                 $projectData['description'] ?? null,
-                $projectData['is_public'] ? 1 : 0
+                $projectData['is_public'] ?? 0
             ]);
             
             $projectId = $this->db->lastInsertId();
@@ -38,7 +37,6 @@
             return $projectId;
         }
 
-        // Обновление данных проекта
         public function updateProject(int $projectId, array $fields): void {
             $allowed = ['name', 'description', 'is_public'];
             $updates = [];
@@ -58,20 +56,63 @@
             $this->db->QueryExecute($sql, $params);
         }
 
-        // Удаление проекта
         public function deleteProject(int $projectId): void {
-            $this->db->QueryExecute("DELETE FROM projects WHERE id = ?", [$projectId]);
-        }
-
-        // Добавление участника в проект
-        public function addMember(int $projectId, int $userId, string $role): void {
+            // Удаление ролей проекта
             $this->db->QueryExecute(
-                "INSERT INTO project_roles (id_project, id_user, role) VALUES (?, ?, ?)",
-                [$projectId, $userId, $role]
+                "DELETE FROM project_roles WHERE id_project = ?",
+                [$projectId]
+            );
+            
+            // Получение столбцов проекта
+            $result = $this->db->Query(
+                "SELECT id FROM columns WHERE project_id = ?",
+                [$projectId]
+            );
+            $columns = $result->fetch_all(MYSQLI_ASSOC);
+            
+            // Удаление задач и связанных данных
+            foreach ($columns as $column) {
+                $tasksContext = new TasksContext($this->db);
+                $tasksContext->deleteTasksByColumn($column['id']);
+            }
+            
+            // Удаление столбцов проекта
+            $this->db->QueryExecute(
+                "DELETE FROM columns WHERE project_id = ?",
+                [$projectId]
+            );
+            
+            // Удаление самого проекта
+            $this->db->QueryExecute(
+                "DELETE FROM projects WHERE id = ?",
+                [$projectId]
             );
         }
 
-        // Получение списка участников проекта
+        public function removeMember(int $projectId, int $userId): void {
+            $this->db->QueryExecute(
+                "DELETE FROM project_roles 
+                WHERE id_project = ? AND id_user = ?",
+                [$projectId, $userId]
+            );
+        }
+
+        public function addMember(int $projectId, int $userId, string $role): void {
+            // Проверка существования связи
+            $result = $this->db->Query(
+                "SELECT * FROM project_roles 
+                WHERE id_project = ? AND id_user = ?",
+                [$projectId, $userId]
+            );
+            
+            if ($result->num_rows === 0) {
+                $this->db->QueryExecute(
+                    "INSERT INTO project_roles (id_project, id_user, role) VALUES (?, ?, ?)",
+                    [$projectId, $userId, $role]
+                );
+            }
+        }
+
         public function getMembers(int $projectId): array {
             $result = $this->db->Query(
                 "SELECT u.*, pr.role 
@@ -83,7 +124,6 @@
             return $result->fetch_all(MYSQLI_ASSOC);
         }
 
-        // Получение проекта по ID
         public function getProjectById(int $projectId): ?Projects {
             $result = $this->db->Query(
                 "SELECT * FROM projects WHERE id = ?",
@@ -95,14 +135,15 @@
             return null;
         }
 
-        // Получение проектов
         public function getPublicProjects(): array {
             $result = $this->db->Query(
                 "SELECT 
-                    p.name AS 'name',
-                    CONCAT(u.surname, ' ', u.name, ' ', u.middlename) AS 'creator_name',
-                    u.id AS 'creator_id',
-                    p.id AS 'project_id'
+                    p.id AS project_id,
+                    p.name,
+                    p.description,
+                    p.is_public,
+                    CONCAT(u.surname, ' ', u.name, ' ', COALESCE(u.middlename, '')) AS creator_name,
+                    u.id AS creator_id
                 FROM 
                     projects p
                 JOIN 
@@ -112,6 +153,17 @@
                 WHERE 
                     p.is_public = 1
                     AND pr.role = 'creator'"
+            );
+            return $result->fetch_all(MYSQLI_ASSOC);
+        }
+
+        public function getProjectMembers(int $projectId): array {
+            $result = $this->db->Query(
+                "SELECT u.id, u.name, u.surname 
+                FROM project_roles pr
+                JOIN users u ON pr.id_user = u.id
+                WHERE pr.id_project = ?",
+                [$projectId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
         }

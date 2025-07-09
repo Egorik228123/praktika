@@ -1,14 +1,17 @@
 <?php
     header('Content-Type: application/json; charset=utf-8');
     require_once __DIR__ . "/../contexts/ColumnsContext.php";
+    require_once __DIR__ . "/../contexts/TasksContext.php";
 
     class ColumnsController {
         private ColumnsContext $columnsContext;
+        private TasksContext $tasksContext;
         public array $errors = [];
 
         public function __construct() {
             $db = new DBConnect();
             $this->columnsContext = new ColumnsContext($db);
+            $this->tasksContext = new TasksContext($db);
         }
 
         private function addError(string $message): void {
@@ -53,9 +56,29 @@
             }
         }
 
-        // Удаление столбца
-        public function deleteColumn(int $columnId): array {
+        // Удаление столбца с перемещением задач
+        public function deleteColumn(int $columnId, int $projectId): array {
             try {
+                // Получаем все столбцы проекта
+                $columns = $this->columnsContext->getColumnsByProject($projectId);
+                
+                // Найдем первый столбец, который не является удаляемым
+                $firstColumnId = null;
+                foreach ($columns as $column) {
+                    if ($column['id'] != $columnId) {
+                        $firstColumnId = $column['id'];
+                        break;
+                    }
+                }
+                
+                // Если нашли столбец для перемещения
+                if ($firstColumnId) {
+                    $this->tasksContext->moveAllTasks($columnId, $firstColumnId);
+                } else {
+                    // Если это последний столбец, удаляем все задачи в нем
+                    $this->tasksContext->deleteTasksByColumn($columnId);
+                }
+
                 $this->columnsContext->deleteColumn($columnId);
                 return ['success' => true];
             } catch (Exception $e) {
@@ -75,7 +98,6 @@
             }
         }
 
-        // Обработчик запросов
         public static function handleRequest() {
             $controller = new self();
             $action = $_POST['action'] ?? '';
@@ -89,7 +111,6 @@
                             'project_id' => $_POST['project_id'],
                         ]);
                         break;
-
                     case 'updateColumn':
                         $response = $controller->updateColumn(
                             $_POST['column_id'],
@@ -99,15 +120,15 @@
                             ]
                         );
                         break;
-
                     case 'deleteColumn':
-                        $response = $controller->deleteColumn($_POST['column_id']);
+                        $response = $controller->deleteColumn(
+                            $_POST['column_id'],
+                            $_POST['project_id']
+                        );
                         break;
-
                     case 'getColumnsByProject':
                         $response = $controller->getColumnsByProject($_POST['project_id']);
                         break;
-
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];
                 }

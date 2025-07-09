@@ -150,12 +150,12 @@
                         <textarea id="projectDescription" rows="4"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="projectStatus">Статус проекта:</label>
-                        <select id="projectStatus" required>
-                            <option value="0">Приватный</option>
-                            <option value="1">Публичный</option>
-                        </select>
-                    </div>
+    <label for="projectStatus">Статус проекта:</label>
+    <div class="checkbox-container">
+        <input type="checkbox" id="projectStatus">
+        <label for="projectStatus">Публичный проект</label>
+    </div>
+</div>
                     <button type="button" class="btn" onclick="createProject()">Создать</button>
                 </form>
             </div>

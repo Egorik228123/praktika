@@ -12,11 +12,12 @@
         // Создание столбца
         public function createColumn(array $columnData): int {
             $sql = "INSERT INTO columns (name, position, project_id) VALUES (?, ?, ?)";
-            return $this->db->QueryExecute($sql, [
+            $this->db->QueryExecute($sql, [
                 $columnData['name'],
                 $columnData['position'],
                 $columnData['project_id']
             ]);
+            return $this->db->lastInsertId();
         }
 
         // Обновление столбца
@@ -32,7 +33,7 @@
                 }
             }
             
-            if (empty($updates))
+            if (empty($updates)) 
                 throw new Exception("Нет полей для обновления");
             
             $sql = "UPDATE columns SET " . implode(', ', $updates) . " WHERE id = ?";
@@ -48,10 +49,22 @@
         // Получение столбцов проекта
         public function getColumnsByProject(int $projectId): array {
             $result = $this->db->Query(
-                "SELECT * FROM columns WHERE project_id = ? ORDER BY id",
+                "SELECT * FROM columns WHERE project_id = ? ORDER BY position",
                 [$projectId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
+        }
+
+        // Получение первого столбца проекта
+        public function getFirstColumn(int $projectId): ?array {
+            $result = $this->db->Query(
+                "SELECT * FROM columns 
+                WHERE project_id = ? 
+                ORDER BY position ASC 
+                LIMIT 1",
+                [$projectId]
+            );
+            return $result->fetch_assoc();
         }
     }
 ?>

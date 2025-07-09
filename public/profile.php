@@ -25,7 +25,7 @@
     <script src="assets/js/profile.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="../src/ajax.js"></script>
-    <script>
+  <script>
         const userId = <?=$_SESSION['user']['id']?>;
         function getUser() {
             let Data = new FormData();
@@ -36,10 +36,80 @@
                     document.querySelector(".profile-text h3").textContent = `${response.data.name} ${response.data.surname} ${response.data.middlename}`;
                     document.querySelector(".profile-text .email").textContent = response.data.email;  
                     document.querySelector(".about-section p").textContent = response.data.bio;  
+                    
+                    
+                    document.querySelector("#surnameInput").value = response.data.surname;
+                    document.querySelector("#nameInput").value = response.data.name;
+                    document.querySelector("#middlenameInput").value = response.data.middlename || '';
+                    document.querySelector("#bioInput").value = response.data.bio || '';
                 }
             });
         }
-        getUser();
+        
+        function updateUser() {
+            let Data = new FormData();
+            Data.append('action', 'updateUser');
+            Data.append('id', userId);
+            Data.append('surname', document.querySelector("#surnameInput").value);
+            Data.append('name', document.querySelector("#nameInput").value);
+            Data.append('middlename', document.querySelector("#middlenameInput").value);
+            Data.append('bio', document.querySelector("#bioInput").value);
+            
+            ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
+                if(response.success) {
+                    alert('Данные успешно обновлены');
+                    getUser(); 
+                    document.getElementById('profileModal').style.display = 'none';
+                } else {
+                    alert('Ошибка: ' + (response.errors ? response.errors.join(', ') : 'Неизвестная ошибка'));
+                }
+            });
+        }
+        
+        function deleteUser() {
+            let Data = new FormData();
+            Data.append('action', 'deleteUser');
+            Data.append('id', userId);
+            
+            ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
+                if(response.success) {
+                    alert('Аккаунт успешно удален');
+                    window.location.href = 'login.php';
+                } else {
+                    alert('Ошибка: ' + (response.errors ? response.errors.join(', ') : 'Неизвестная ошибка'));
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            getUser();
+            
+            document.getElementById('editProfileBtn').addEventListener('click', function() {
+                document.getElementById('profileModal').style.display = 'block';
+            });
+            
+            document.querySelector('#profileModal .btn-primary').addEventListener('click', function(e) {
+                e.preventDefault();
+                updateUser();
+            });
+            
+            document.getElementById('deleteAccountBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('confirmModal').style.display = 'block';
+            });
+            
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                deleteUser();
+            });
+            
+            // Закрытие модальных окон при клике вне их
+            window.addEventListener('click', function(event) {
+                if (event.target.className === 'modal') {
+                    event.target.style.display = 'none';
+                }
+            });
+        });
     </script>
 </head>
 <body>
@@ -100,13 +170,13 @@
             <h2>Изменение личных данных</h2>
             <div class="form-group">
                 <label>Вы</label>
-                <input type="text" placeholder="Фамилия">
-                <input type="text" placeholder="Имя">
-                <input type="text" placeholder="Отчество">
+                <input type="text" id="surnameInput" placeholder="Фамилия" required>
+                <input type="text" id="nameInput" placeholder="Имя" required>
+                <input type="text" id="middlenameInput" placeholder="Отчество">
             </div>
             <div class="form-group">
                 <label>Краткая информация</label>
-                <textarea placeholder="Расскажите о себе"></textarea>
+                <textarea id="bioInput" placeholder="Расскажите о себе"></textarea>
             </div>
             <div class="modal-actions">
                 <button class="btn btn-danger" id="deleteAccountBtn">Удалить аккаунт</button>
@@ -121,6 +191,7 @@
             <p>Это действие нельзя отменить. Все ваши данные будут удалены.</p>
             <div class="modal-actions">
                 <button class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+                <button class="btn" onclick="document.getElementById('confirmModal').style.display = 'none'">Отмена</button>
             </div>
         </div>
     </div>

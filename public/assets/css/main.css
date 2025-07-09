@@ -125,6 +125,52 @@ body {
     cursor: pointer;
     font-size: 25px;
 }
+.scrollable-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+.assignee-item, .subtask-item, .member-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.assignee-item:last-child, .subtask-item:last-child, .member-item:last-child {
+    border-bottom: none;
+}
+
+.remove-assignee, .remove-subtask, .remove-member {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.controls-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.searchable-select {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
 
 @media (max-width: 768px) {
     .container {
