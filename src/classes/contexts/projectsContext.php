@@ -160,7 +160,7 @@
             );
             return $result->fetch_all(MYSQLI_ASSOC);
         }
-
+            //asdasdasd
         // Новая функция для получения всех проектов для конкретного пользователя (публичных и приватных)
         public function getAllProjectsForUser(int $userId): array {
             $result = $this->db->Query(
