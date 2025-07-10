@@ -169,8 +169,9 @@
                     p.name,
                     p.description,
                     p.is_public,
-                    CONCAT(u.surname, ' ', u.name, ' ', COALESCE(u.middlename, '')) AS creator_name,
-                    pr_creator.id_user AS creator_id
+                    
+                    MIN(CONCAT(u.surname, ' ', u.name, ' ', COALESCE(u.middlename, ''))) AS creator_name,
+                    MIN(pr_creator.id_user) AS creator_id
                 FROM
                     projects p
                 JOIN

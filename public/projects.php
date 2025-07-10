@@ -60,7 +60,7 @@
                 card.innerHTML = `
                     <span class="project-number">№${project.project_id}</span>
                     <h3 class="project-title">${project.name}</h3>
-                    <p class="project-creator">${project.creator_id == currentUserId ? 'Вы' : project.creator_name}</p>
+                    <p class="project-creator">${project.creator_id == currentUserId ? 'Вы' : (project.creator_name || 'Неизвестный создатель')}</p>
                     <p class="project-status">${project.is_public == 1 ? 'Публичный' : 'Приватный'}</p>
                     <button class="btn project-task-btn" onclick="openProject(${project.project_id})">Просмотреть задачи</button>
                 `;

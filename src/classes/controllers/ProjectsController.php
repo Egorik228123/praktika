@@ -112,7 +112,7 @@
                 $projects = $this->projectsContext->getAllProjectsForUser($userId);
                 return ['success' => true, 'data' => $projects];
             } catch (Exception $e) {
-                error_log("Ошибка загрузки проектов пользователя: " . $e->getMessage());
+                 error_log("Ошибка загрузки проектов пользователя: " . $e->getMessage());
                 return ['success' => false, 'errors' => [$e->getMessage()]];
             }
         }
@@ -141,7 +141,7 @@
 
         public function getProjectMembers(int $projectId): array {
             try {
-                $members = $this->projectsContext->getMembers($projectId);
+                $members = $this->projectsContext->getProjectMembers($projectId);
                 return ['success' => true, 'data' => $members];
             } catch (Exception $e) {
                 return ['success' => false, 'errors' => [$e->getMessage()]];
