@@ -1,0 +1,60 @@
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.profile-info {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+.profile-info h3 {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+.avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+}
+.profile-info .email {
+    color: var(--light-text);
+    margin-bottom: 10px;
+    display: block;
+}
+.last-activity {
+    color: var(--light-text);
+    font-size: 14px;
+}
+.about-section h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+.edit-profile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+#editProfileBtn {
+    color: var(--danger-color);
+    cursor: pointer;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.form-group input {
+    padding: 5px 10px;
+    width: 200px;
+}
+.modal-actions {
+    margin-top: 15px;
+}
