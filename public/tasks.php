@@ -54,7 +54,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно добавления столбца -->
     <div id="columnModal" class="modal">
         <div class="modal-content">
             <h2>Добавить столбец</h2>
@@ -66,7 +65,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно просмотра задачи -->
     <div id="taskDetailsModal" class="modal">
         <div class="modal-content">
             <h2>Детали задачи</h2>
@@ -86,8 +84,7 @@
                     <div class="scrollable-container" style="max-height: 150px;" id="editAssigneesList"></div>
                     <div class="assignee-controls">
                         <select id="editAssigneeSelect" class="searchable-select">
-                            <!-- Users will be loaded dynamically -->
-                        </select>
+                            </select>
                         <button type="button" id="editAddAssigneeBtn">+ Добавить</button>
                     </div>
                 </div>
@@ -115,7 +112,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно создания задачи -->
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <h2 id="taskModalTitle">Создать задачу</h2>
@@ -135,8 +131,7 @@
                     <div class="scrollable-container" style="max-height: 150px;" id="assigneesList"></div>
                     <div class="assignee-controls">
                         <select id="assigneeSelect" class="searchable-select">
-                            <!-- Users will be loaded dynamically -->
-                        </select>
+                            </select>
                         <button type="button" id="addAssigneeBtn">+ Добавить</button>
                     </div>
                 </div>
@@ -151,7 +146,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно данных проекта -->
     <div id="projectModal" class="modal">
         <div class="modal-content">
             <h2>Настройки проекта</h2>
@@ -176,8 +170,7 @@
                     <div class="scrollable-container" style="max-height: 200px;" id="projectMembersList"></div>
                     <div class="member-controls">
                         <select id="memberSelect" class="searchable-select">
-                            <!-- Users will be loaded dynamically -->
-                        </select>
+                            </select>
                         <button type="button" id="addMemberBtn">+ Добавить</button>
                     </div>
                 </div>

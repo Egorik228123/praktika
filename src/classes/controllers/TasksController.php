@@ -1,5 +1,6 @@
 <?php
     require_once __DIR__ . "/../contexts/tasksContext.php";
+    require_once __DIR__ . "/../DB.php"; // Убедитесь, что DB.php подключен, если TasksContext его использует
     header('Content-Type: application/json; charset=utf-8');
     
     class TasksController {
@@ -123,7 +124,7 @@
                 $taskId = $this->tasksContext->createTask($taskData);
         
                 // Добавляем ответственных
-                if (!empty($taskData['assignees'])) {
+                if (isset($taskData['assignees'])) {
                     $assignees = json_decode($taskData['assignees'], true);
                     foreach ($assignees as $userId) {
                         $this->tasksContext->addAssignee($taskId, $userId);
@@ -199,12 +200,13 @@
                             'name' => $_POST['name'],
                             'description' => $_POST['description'] ?? null,
                             'due_date' => $_POST['due_date'] ?? null,
-                            'column_id' => $_POST['column_id']
+                            'column_id' => $_POST['column_id'],
+                            'assignees' => $_POST['assignees'] ?? '[]' // Передача assignees
                         ]);
                         break;
                     case 'updateTask':
                         $response = $controller->updateTask(
-                            $_POST['task_id'], 
+                            (int)$_POST['task_id'], 
                             [
                                 'name' => $_POST['name'] ?? null,
                                 'description' => $_POST['description'] ?? null,
@@ -213,41 +215,41 @@
                         );
                         break;
                     case 'deleteTask':
-                        $response = $controller->deleteTask($_POST['task_id']);
+                        $response = $controller->deleteTask((int)$_POST['task_id']);
                         break;
                     case 'moveTask':
                         $response = $controller->moveTask(
-                            $_POST['task_id'],
-                            $_POST['new_column_id']
+                            (int)$_POST['task_id'],
+                            (int)$_POST['new_column_id']
                         );
                         break;
                     case 'assignUser':
-                        $response = $controller->assignUser($_POST['task_id'], $_POST['user_id']);
+                        $response = $controller->assignUser((int)$_POST['task_id'], (int)$_POST['user_id']);
                         break;
                     case 'getTasksByColumn':
-                        $response = $controller->getTasksByColumn($_POST['column_id']);
+                        $response = $controller->getTasksByColumn((int)$_POST['column_id']);
                         break;
                     case 'getTaskDetails':
-                        $response = $controller->getTaskDetails($_POST['task_id']);
+                        $response = $controller->getTaskDetails((int)$_POST['task_id']);
                         break;
                     case 'addAssignee':
-                        $response = $controller->addAssignee($_POST['task_id'], $_POST['user_id']);
+                        $response = $controller->addAssignee((int)$_POST['task_id'], (int)$_POST['user_id']);
                         break;
                     case 'removeAssignee':
-                        $response = $controller->removeAssignee($_POST['task_id'], $_POST['user_id']);
+                        $response = $controller->removeAssignee((int)$_POST['task_id'], (int)$_POST['user_id']);
                         break;
                     case 'createSubtask':
                         $response = $controller->createSubtask([
                             'name' => $_POST['name'],
                             'description' => $_POST['description'] ?? null,
-                            'task_id' => $_POST['task_id']
+                            'task_id' => (int)$_POST['task_id']
                         ]);
                         break;
                     case 'deleteSubtask':
-                        $response = $controller->deleteSubtask($_POST['subtask_id']);
+                        $response = $controller->deleteSubtask((int)$_POST['subtask_id']);
                         break;
                     case 'moveAllTasks':
-                        $response = $controller->moveAllTasks($_POST['from_column_id'], $_POST['to_column_id']);
+                        $response = $controller->moveAllTasks((int)$_POST['from_column_id'], (int)$_POST['to_column_id']);
                         break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];

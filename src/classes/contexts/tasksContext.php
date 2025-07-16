@@ -21,7 +21,10 @@
                 }
             }
             
-            if (empty($updates)) throw new Exception("Нет полей для обновления");
+            if (empty($updates)) {
+                // Если нет полей для обновления, просто выходим
+                return;
+            }
             
             $sql = "UPDATE tasks SET " . implode(', ', $updates) . " WHERE id = ?";
             $params[] = $taskId;
@@ -64,22 +67,20 @@
                 "SELECT 
                     tasks.id AS id,
                     tasks.name AS name,
-                    CONCAT(users.name, ' ', users.surname) AS assignee
+                    COALESCE(GROUP_CONCAT(CONCAT(users.name, ' ', users.surname) SEPARATOR ', '), 'Не назначен') AS assignee
                 FROM 
                     tasks
-                LEFT JOIN (
-                    SELECT 
-                        task_id,
-                        MIN(user_id) AS first_user_id
-                    FROM 
-                        task_assignees
-                    GROUP BY 
-                        task_id
-                ) AS first_assignee ON tasks.id = first_assignee.task_id
                 LEFT JOIN 
-                    users ON first_assignee.first_user_id = users.id
+                    task_assignees ON tasks.id = task_assignees.task_id
+                LEFT JOIN 
+                    users ON task_assignees.user_id = users.id
                 WHERE 
-                    tasks.column_id = ?;",
+                    tasks.column_id = ?
+                GROUP BY
+                    tasks.id, tasks.name
+                ORDER BY
+                    tasks.id;
+                ", // Добавлен GROUP BY и ORDER BY для корректного отображения
                 [$columnId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
@@ -98,7 +99,7 @@
                 "SELECT * FROM tasks WHERE id = ?",
                 [$taskId]
             );
-            return $result->fetch_assoc();
+            return $result->fetch_assoc() ?: []; // Возвращаем пустой массив, если задача не найдена
         }
 
         public function getTaskAssignees(int $taskId): array {
@@ -138,10 +139,18 @@
 
         // Добавление ответственного
         public function addAssignee(int $taskId, int $userId): void {
-            $this->db->QueryExecute(
-                "INSERT INTO task_assignees (task_id, user_id) VALUES (?, ?)",
+            // Проверяем, не назначен ли уже пользователь
+            $result = $this->db->Query(
+                "SELECT * FROM task_assignees WHERE task_id = ? AND user_id = ?",
                 [$taskId, $userId]
             );
+            
+            if ($result->num_rows === 0) {
+                $this->db->QueryExecute(
+                    "INSERT INTO task_assignees (task_id, user_id) VALUES (?, ?)",
+                    [$taskId, $userId]
+                );
+            }
         }
 
         // Удаление ответственного
@@ -173,16 +182,14 @@
             );
         }
 
-        // Удаление всех задач в столбце
+        // Удаление всех задач в столбце (не используется в текущей логике, но оставлено для полноты)
         public function deleteTasksByColumn(int $columnId): void {
-            // Получаем все задачи в столбце
             $result = $this->db->Query(
                 "SELECT id FROM tasks WHERE column_id = ?",
                 [$columnId]
             );
             $tasks = $result->fetch_all(MYSQLI_ASSOC);
             
-            // Удаляем каждую задачу (каскадно удалит подзадачи и ответственных)
             foreach ($tasks as $task) {
                 $this->deleteTask($task['id']);
             }
@@ -197,19 +204,29 @@
         }
 
         public function updateAssignees(int $taskId, array $assigneeIds): void {
-            // Удаляем старых ответственных
+            // Удаляем всех текущих ответственных для этой задачи
             $this->db->QueryExecute("DELETE FROM task_assignees WHERE task_id = ?", [$taskId]);
             
-            // Добавляем новых
+            // Добавляем новых ответственных
             foreach ($assigneeIds as $userId) {
-                $this->db->QueryExecute(
-                    "INSERT INTO task_assignees (task_id, user_id) VALUES (?, ?)",
-                    [$taskId, $userId]
-                );
+                // Убедимся, что userId является целым числом, чтобы избежать ошибок SQL
+                $userId = (int) $userId;
+                if ($userId > 0) {
+                    $this->addAssignee($taskId, $userId);
+                }
             }
         }
 
         public function updateSubtasks(int $taskId, array $subtasks): void {
+            // Получаем текущие подзадачи для данной задачи
+            $currentSubtasksResult = $this->db->Query(
+                "SELECT id FROM subtasks WHERE task_id = ?",
+                [$taskId]
+            );
+            $currentSubtaskIds = array_column($currentSubtasksResult->fetch_all(MYSQLI_ASSOC), 'id');
+            
+            $updatedSubtaskIds = [];
+
             foreach ($subtasks as $subtask) {
                 if (isset($subtask['id']) && $subtask['id'] > 0) {
                     // Обновление существующей подзадачи
@@ -217,13 +234,21 @@
                         "UPDATE subtasks SET name = ?, description = ? WHERE id = ?",
                         [$subtask['name'], $subtask['description'], $subtask['id']]
                     );
+                    $updatedSubtaskIds[] = $subtask['id'];
                 } else {
                     // Создание новой подзадачи
                     $this->db->QueryExecute(
                         "INSERT INTO subtasks (task_id, name, description) VALUES (?, ?, ?)",
                         [$taskId, $subtask['name'], $subtask['description']]
                     );
+                    $updatedSubtaskIds[] = $this->db->lastInsertId();
                 }
+            }
+
+            // Удаляем подзадачи, которые были удалены из списка на клиенте
+            $subtasksToDelete = array_diff($currentSubtaskIds, $updatedSubtaskIds);
+            foreach ($subtasksToDelete as $subtaskId) {
+                $this->deleteSubtask($subtaskId);
             }
         }
     }

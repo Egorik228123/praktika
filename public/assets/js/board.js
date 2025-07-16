@@ -42,6 +42,12 @@ const TaskManager = (() => {
             if (!select) return;
             
             select.innerHTML = '';
+            // Добавляем пустую опцию по умолчанию
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Выберите пользователя';
+            select.appendChild(defaultOption);
+
             allUsers.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id;
@@ -110,7 +116,7 @@ const TaskManager = (() => {
                     <h2>${column.name}</h2>
                     <button class="delete-column-btn" data-column-id="${column.id}">×</button>
                 </div>
-                <div class="tasks-container"></div>
+                <div class="tasks-container" ondragover="TaskManager.handleDragOver(event)" ondrop="TaskManager.handleDrop(event, ${column.id})"></div>
             `;
             container.appendChild(card);
             getTasks(column.id);
@@ -150,6 +156,8 @@ const TaskManager = (() => {
             const card = document.createElement('div');
             card.className = 'task';
             card.dataset.taskId = task.id;
+            card.draggable = true; // Сделать задачу перетаскиваемой
+            card.ondragstart = (event) => TaskManager.handleDragStart(event, task.id); // Обработчик начала перетаскивания
             card.innerHTML = `
                 <h3>${task.name}</h3>
                 <p>Ответственный: ${task.assignee || 'Не назначен'}</p>
@@ -501,11 +509,11 @@ const TaskManager = (() => {
         const assigneesContainer = document.getElementById('editAssigneesList');
         assigneesContainer.innerHTML = '';
         data.assignees.forEach(assignee => {
-            const user = allUsers.find(u => u.id == assignee.user_id);
+            const user = allUsers.find(u => u.id == assignee.id); // Исправлено: assignee.id вместо assignee.user_id
             if (user) {
                 const div = document.createElement('div');
                 div.className = 'assignee-item';
-                div.dataset.userId = assignee.user_id;
+                div.dataset.userId = user.id; // Используем user.id
                 div.innerHTML = `
                     <span>${user.surname} ${user.name}</span>
                     <button class="remove-assignee">×</button>
@@ -552,6 +560,7 @@ const TaskManager = (() => {
             <button class="remove-assignee">×</button>
         `;
         container.appendChild(div);
+        select.value = ''; // Очищаем выбор после добавления
     }
     
     // Добавление подзадачи
@@ -562,7 +571,7 @@ const TaskManager = (() => {
         if (!name) return;
         
         const container = document.getElementById('subtasksList');
-        const subtaskId = Date.now(); // Временный ID
+        const subtaskId = Date.now(); // Временный ID для новых подзадач на клиенте
         
         const div = document.createElement('div');
         div.className = 'subtask-item';
@@ -587,6 +596,7 @@ const TaskManager = (() => {
         document.getElementById('taskDescription').value = '';
         document.getElementById('taskDeadline').value = '';
         document.getElementById('assigneesList').innerHTML = '';
+        document.getElementById('assigneeSelect').value = ''; // Очистка селекта
     }
     
     // Показ модального окна
@@ -600,6 +610,45 @@ const TaskManager = (() => {
         document.getElementById(modalId).style.display = 'none';
         document.body.style.overflow = 'auto';
     }
+
+    // Drag and Drop
+    let draggedTaskId = null;
+
+    function handleDragStart(event, taskId) {
+        draggedTaskId = taskId;
+        event.dataTransfer.setData('text/plain', taskId);
+        event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault(); // Разрешить перетаскивание
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    async function handleDrop(event, newColumnId) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData('text/plain');
+        
+        if (taskId && newColumnId) {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'moveTask');
+                formData.append('task_id', taskId);
+                formData.append('new_column_id', newColumnId);
+
+                const response = await ajaxRequest('../src/classes/controllers/TasksController.php', formData);
+                if (response.success) {
+                    // Перезагрузить задачи для обоих столбцов
+                    columns.forEach(column => getTasks(column.id));
+                } else {
+                    console.error('Ошибка перемещения задачи:', response.errors);
+                }
+            } catch (error) {
+                console.error('Ошибка перемещения задачи:', error);
+            }
+        }
+        draggedTaskId = null;
+    }
     
     // Инициализация обработчиков событий
     function initEventListeners() {
@@ -611,6 +660,7 @@ const TaskManager = (() => {
         
         // Открытие модалки создания задачи
         document.getElementById('addTaskBtn').addEventListener('click', () => {
+            resetTaskForm(); // Сброс формы при открытии модалки создания
             showModal('taskModal');
         });
         
@@ -700,5 +750,5 @@ const TaskManager = (() => {
         });
     }
     
-    return { init };
+    return { init, handleDragStart, handleDragOver, handleDrop };
 })();
