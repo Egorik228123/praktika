@@ -278,7 +278,7 @@ const TaskManager = (() => {
         const subtasks = Array.from(
             document.querySelectorAll('#subtasksList .subtask-item')
         ).map(el => ({
-            id: el.dataset.subtaskId || 0,
+            id: el.dataset.subtaskId && !isNaN(parseInt(el.dataset.subtaskId)) ? parseInt(el.dataset.subtaskId) : 0, // Set to 0 if new, parse if existing
             name: el.querySelector('.subtask-name').textContent,
             description: el.querySelector('.subtask-description')?.textContent || ''
         }));
@@ -571,11 +571,11 @@ const TaskManager = (() => {
         if (!name) return;
         
         const container = document.getElementById('subtasksList');
-        const subtaskId = Date.now(); // Временный ID для новых подзадач на клиенте
-        
+        // New subtasks should not have an ID or have id: 0 to be treated as new on the server
         const div = document.createElement('div');
         div.className = 'subtask-item';
-        div.dataset.subtaskId = subtaskId;
+        // Do NOT set data-subtaskId for new subtasks, or set it to 0
+        // div.dataset.subtaskId = 0; // Or just omit it. The server checks for id > 0 for updates.
         div.innerHTML = `
             <div class="subtask-info">
                 <div class="subtask-name">${name}</div>

@@ -24,7 +24,7 @@
                     '<div class="error">Заполните все поля</div>';
                 return;
             }
-
+//
             let Data = new FormData();
             Data.append('action', 'authorize');
             Data.append('email', email);

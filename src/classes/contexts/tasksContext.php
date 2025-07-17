@@ -228,6 +228,7 @@
             $updatedSubtaskIds = [];
 
             foreach ($subtasks as $subtask) {
+                // If subtask['id'] is not set or is 0, it's a new subtask
                 if (isset($subtask['id']) && $subtask['id'] > 0) {
                     // Обновление существующей подзадачи
                     $this->db->QueryExecute(
