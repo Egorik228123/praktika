@@ -26,18 +26,18 @@
 
         function getProjects() {
             const formData = new FormData();
-            // Получаем все проекты, связанные с текущим пользователем,
-            // включая публичные, в которых он участвует, и приватные, которые он создал.
+           
+            
             formData.append('action', 'getAllUserProjects');
-            formData.append('user_id', currentUserId); // Передаем ID текущего пользователя
+            formData.append('user_id', currentUserId); 
 
             ajax('../src/classes/controllers/ProjectsController.php', formData, function(response) {
                 if(response.success) {
                     allProjects = response.data;
                     renderProjects(allProjects);
-                    // Больше нет нужды в searchUsers, так как логика поиска теперь специфична для проектов
+                    
                     document.querySelector('.search-input').addEventListener('input', function(e) {
-                        searchProjects(e.target.value); // Новая функция поиска для проектов
+                        searchProjects(e.target.value); 
                     });
                 } else {
                     console.error('Failed to load projects:', response.errors);
@@ -171,7 +171,7 @@
             <div class="line-header">
                 <h2>Проекты</h2>
                 <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Поиск по ID, имени, фамилии...">
+                    <input type="text" class="search-input" placeholder="Поиск проекта...">
                 </div>
                 <button id="createProjectBtn" class="btn">Создать проект</button>
             </div>
