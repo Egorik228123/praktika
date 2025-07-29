@@ -1,6 +1,7 @@
 <?php
     header('Content-Type: application/json; charset=utf-8');
     require_once __DIR__ . "/../contexts/UsersContext.php";
+    require_once __DIR__ . "/../DB.php"; // Убедитесь, что DB.php подключен, если он используется для DBConnect
 
     class UsersController {
         private UsersContext $usersContext;
@@ -29,6 +30,9 @@
                 }
 
                 $result = $this->usersContext->deleteUser($userId);
+                // После успешного удаления пользователя, завершаем сессию
+                session_start();
+                session_destroy();
                 return ['success' => true, 'data' => $result];
             }
             catch(Exception $e) {
@@ -171,15 +175,23 @@
                     case 'getAllUsers':
                         $response = $controller->getAllUsers();
                         break;
-                        
-case 'updateUser':
-    $response = $controller->updateUser($_POST['id'], [
-        'surname' => $_POST['surname'],
-        'name' => $_POST['name'],
-        'middlename' => $_POST['middlename'],
-        'bio' => $_POST['bio']
-    ]);
-    break;
+                    case 'updateUser':
+                        $response = $controller->updateUser($_POST['id'], [
+                            'surname' => $_POST['surname'],
+                            'name' => $_POST['name'],
+                            'middlename' => $_POST['middlename'],
+                            'bio' => $_POST['bio']
+                        ]);
+                        break;
+                    case 'deleteUser': // Добавлен новый case для удаления пользователя
+                        // Проверяем, что пользователь авторизован, прежде чем разрешить удаление
+                        session_start();
+                        if (!isset($_SESSION['user']) || $_SESSION['user']['id'] != $_POST['id']) {
+                             $response = ['success' => false, 'errors' => ['Недостаточно прав для удаления этого аккаунта.']];
+                        } else {
+                            $response = $controller->deleteUser((int)$_POST['id']);
+                        }
+                        break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];
                 }
