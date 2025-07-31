@@ -47,6 +47,14 @@
         }
         
         function updateUser() {
+            const password = document.querySelector("#passwordInput").value;
+            const repeatPassword = document.querySelector("#repeatPasswordInput").value;
+
+            if (password && password !== repeatPassword) {
+                alert('Пароли не совпадают');
+                return;
+            }
+
             let Data = new FormData();
             Data.append('action', 'updateUser');
             Data.append('id', userId);
@@ -54,6 +62,9 @@
             Data.append('name', document.querySelector("#nameInput").value);
             Data.append('middlename', document.querySelector("#middlenameInput").value);
             Data.append('bio', document.querySelector("#bioInput").value);
+            if (password) {
+                Data.append('password', password);
+            }
             
             ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
                 if(response.success) {
@@ -169,10 +180,24 @@
         <div class="modal-content">
             <h2>Изменение личных данных</h2>
             <div class="form-group">
-                <label>Вы</label>
+                <label>Фамилия</label>
                 <input type="text" id="surnameInput" placeholder="Фамилия" required>
+            </div>
+            <div class="form-group">
+                <label>Имя</label>
                 <input type="text" id="nameInput" placeholder="Имя" required>
+            </div>
+            <div class="form-group">
+                <label>Отчество</label>
                 <input type="text" id="middlenameInput" placeholder="Отчество">
+            </div>
+            <div class="form-group">
+                <label>Новый пароль</label>
+                <input type="password" id="passwordInput" placeholder="Новый пароль">
+            </div>
+            <div class="form-group">
+                <label>Повторите новый пароль</label>
+                <input type="password" id="repeatPasswordInput" placeholder="Повторите новый пароль">
             </div>
             <div class="form-group">
                 <label>Краткая информация</label>

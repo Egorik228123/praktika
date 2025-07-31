@@ -176,12 +176,16 @@
                         $response = $controller->getAllUsers();
                         break;
                     case 'updateUser':
-                        $response = $controller->updateUser($_POST['id'], [
+                        $userData = [
                             'surname' => $_POST['surname'],
                             'name' => $_POST['name'],
                             'middlename' => $_POST['middlename'],
                             'bio' => $_POST['bio']
-                        ]);
+                        ];
+                        if (isset($_POST['password']) && !empty($_POST['password'])) {
+                            $userData['password'] = $_POST['password'];
+                        }
+                        $response = $controller->updateUser($_POST['id'], $userData);
                         break;
                     case 'deleteUser': // Добавлен новый case для удаления пользователя
                         // Проверяем, что пользователь авторизован, прежде чем разрешить удаление

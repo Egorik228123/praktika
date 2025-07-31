@@ -36,6 +36,14 @@
                 return;
             }
 
+            // Добавлена валидация для ФИО только с использованием латинских букв
+            const latinRegex = /^[A-Za-z]+$/;
+            if (!latinRegex.test(name) || !latinRegex.test(surname) || (middlename && !latinRegex.test(middlename))) {
+                document.getElementById('notification').innerHTML = 
+                    '<div class="error">Имя, фамилия и отчество должны содержать только латинские буквы</div>';
+                return;
+            }
+
             let Data = new FormData();
             Data.append('action', 'register');
             Data.append('name', name);
