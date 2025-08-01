@@ -1,6 +1,5 @@
 <?php
     require_once __DIR__ . "/../contexts/ProjectsContext.php";
-    // Убедитесь, что DB.php включен, если он еще не включен ProjectsContext.php
     require_once __DIR__ . "/../DB.php";
     header('Content-Type: application/json; charset=utf-8');
 
@@ -17,14 +16,12 @@
             $this->errors[] = $message;
         }
 
-        // Создание проекта
         public function createProject(array $projectData): array {
             try {
                 if (empty($projectData['name'])) {
                     $this->addError("Название проекта обязательно");
                     return ['success' => false, 'errors' => $this->errors];
                 }
-                // Убедитесь, что is_public правильно приведено к int из POST-данных
                 $projectData['is_public'] = isset($projectData['is_public']) ? (int)$projectData['is_public'] : 0;
 
                 $projectId = $this->projectsContext->createProject($projectData);
@@ -35,14 +32,12 @@
             }
         }
 
-        // Обновление проекта
         public function updateProject(int $projectId, array $projectData): array {
             try {
                 if ($projectId <= 0) {
                     $this->addError("Некорректный ID проекта");
                     return ['success' => false, 'errors' => $this->errors];
                 }
-                // Убедитесь, что is_public правильно приведено к int из POST-данных
                 if (isset($projectData['is_public'])) {
                     $projectData['is_public'] = (int)$projectData['is_public'];
                 }
@@ -55,9 +50,15 @@
             }
         }
 
-        // Удаление проекта
-        public function deleteProject(int $projectId): array {
+        public function deleteProject(int $projectId, int $userId): array {
             try {
+                // Проверка, является ли пользователь создателем проекта
+                $creator = $this->projectsContext->getProjectCreator($projectId);
+                if ($creator['id'] !== $userId) {
+                    $this->addError("У вас нет прав для удаления этого проекта.");
+                    return ['success' => false, 'errors' => $this->errors];
+                }
+
                 $this->projectsContext->deleteProject($projectId);
                 return ['success' => true];
             } catch (Exception $e) {
@@ -66,7 +67,6 @@
             }
         }
 
-        // Добавление участника
         public function addMember(int $projectId, int $userId, string $role): array {
             try {
                 if (!in_array($role, ['creator', 'admin', 'user'])) {
@@ -82,7 +82,6 @@
             }
         }
 
-        // Получение участников
         public function getMembers(int $projectId): array {
             try {
                 $members = $this->projectsContext->getMembers($projectId);
@@ -94,7 +93,6 @@
             }
         }
 
-        // Получение публичных проектов
         public function getPublicProjects(): array {
             try {
                 $projects = $this->projectsContext->getPublicProjects();
@@ -106,7 +104,6 @@
             }
         }
 
-        // Новая функция для получения всех проектов для пользователя
         public function getAllUserProjects(int $userId): array {
             try {
                 $projects = $this->projectsContext->getAllProjectsForUser($userId);
@@ -129,7 +126,6 @@
             }
         }
 
-        // Упрощенное добавление участника (роль по умолчанию 'user')
         public function addProjectMember(int $projectId, int $userId): array {
             try {
                 $this->projectsContext->addMember($projectId, $userId, 'user');
@@ -166,7 +162,7 @@
                     case 'getPublicProjects':
                         $response = $controller->getPublicProjects();
                         break;
-                    case 'getAllUserProjects': // Новый случай для получения всех проектов, связанных с пользователем
+                    case 'getAllUserProjects':
                         $response = $controller->getAllUserProjects((int)$_POST['user_id']);
                         break;
                     case 'getProjectById':
@@ -181,8 +177,14 @@
                             [
                                 'name' => $_POST['name'],
                                 'description' => $_POST['description'] ?? null,
-                                'is_public' => isset($_POST['is_public']) ? (int)$_POST['is_public'] : 0 // Приведение к int здесь
+                                'is_public' => isset($_POST['is_public']) ? (int)$_POST['is_public'] : 0
                             ]
+                        );
+                        break;
+                    case 'deleteProject':
+                         $response = $controller->deleteProject(
+                            (int)$_POST['project_id'],
+                            (int)$_POST['user_id']
                         );
                         break;
                     case 'addProjectMember':

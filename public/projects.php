@@ -62,22 +62,22 @@
                     <h3 class="project-title">${project.name}</h3>
                     <p class="project-creator">${project.creator_id == currentUserId ? 'Вы' : (project.creator_name || 'Неизвестный создатель')}</p>
                     <p class="project-status">${project.is_public == 1 ? 'Публичный' : 'Приватный'}</p>
-                    <button class="btn project-task-btn" onclick="openProject(${project.project_id})">Просмотреть задачи</button>
+                    <div class="project-actions">
+                        <button class="btn project-task-btn" onclick="openProject(${project.project_id})">Просмотреть задачи</button>
+                        ${project.creator_id == currentUserId ? `<button class="btn btn-danger" onclick="deleteProject(${project.project_id})">Удалить</button>` : ''}
+                    </div>
                 `;
                 container.appendChild(card);
             });
         }
 
         function openProject(projectId) {
-            // Нет необходимости в AJAX-вызове здесь, прямое перенаправление в порядке, если проект существует.
-            // Проверка на стороне сервера в tasks.php будет обрабатывать разрешения доступа.
             window.location.href = `tasks.php?projectId=${projectId}`;
         }
 
         function createProject() {
             const name = document.getElementById('projectName').value.trim();
             const description = document.getElementById('projectDescription').value.trim();
-            // Получаем статус чекбокса как булево значение и преобразуем в 0 или 1
             const is_public_checkbox = document.getElementById('projectStatus');
             const is_public = is_public_checkbox.checked ? 1 : 0;
 
@@ -90,7 +90,7 @@
             formData.append('action', 'createProject');
             formData.append('name', name);
             formData.append('description', description);
-            formData.append('is_public', is_public); // Отправляем как 0 или 1
+            formData.append('is_public', is_public);
             formData.append('user_id', currentUserId);
 
             ajax('../src/classes/controllers/ProjectsController.php', formData, function(response) {
@@ -102,7 +102,25 @@
             });
         }
 
-        // Новая функция для обработки поиска проектов на стороне клиента
+        // Новая функция для удаления проекта
+        function deleteProject(projectId) {
+            if (confirm('Вы уверены, что хотите удалить этот проект? Все связанные данные (задачи, роли) будут удалены.')) {
+                const formData = new FormData();
+                formData.append('action', 'deleteProject');
+                formData.append('project_id', projectId);
+                formData.append('user_id', currentUserId); 
+                
+                ajax('../src/classes/controllers/ProjectsController.php', formData, function(response) {
+                    if (response.success) {
+                        alert('Проект успешно удален.');
+                        getProjects(); // Обновление списка проектов
+                    } else {
+                        alert('Ошибка удаления проекта: ' + (response.errors ? response.errors.join(', ') : 'Неизвестная ошибка'));
+                    }
+                });
+            }
+        }
+
         function searchProjects(query) {
             const lowerCaseQuery = query.toLowerCase();
             const filteredProjects = allProjects.filter(project =>
@@ -113,8 +131,6 @@
             renderProjects(filteredProjects);
         }
 
-
-        // Функционал модального окна
         document.addEventListener('DOMContentLoaded', (event) => {
             const createProjectBtn = document.getElementById('createProjectBtn');
             const createProjectModal = document.getElementById('createProjectModal');
@@ -133,7 +149,7 @@
                     createProjectModal.style.display = "none";
                 }
             }
-            getProjects(); // Начальная загрузка проектов
+            getProjects();
         });
 
     </script>

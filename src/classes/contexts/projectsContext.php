@@ -1,7 +1,7 @@
 <?php
     require_once __DIR__ . "/../models/Projects.php";
     require_once __DIR__ . "/../DB.php";
-    require_once __DIR__ . "/TasksContext.php"; // Добавлено для разрешения зависимости при удалении проекта
+    require_once __DIR__ . "/TasksContext.php";
 
     class ProjectsContext {
         private DBConnect $db;
@@ -15,13 +15,11 @@
                 "INSERT INTO projects (name, description, is_public) VALUES (?, ?, ?)", [
                 $projectData['name'],
                 $projectData['description'] ?? null,
-                // Убедитесь, что is_public обрабатывается как целое число (0 или 1)
                 (int)($projectData['is_public'] ?? 0)
             ]);
 
             $projectId = $this->db->lastInsertId();
 
-            // Создание стандартных столбцов
             $defaultColumns = ['новые', 'в процессе', 'можно проверять', 'готово'];
             foreach ($defaultColumns as $position => $name) {
                 $this->db->QueryExecute(
@@ -30,7 +28,6 @@
                 );
             }
 
-            // Создание роли
             $this->db->QueryExecute(
                 "INSERT INTO project_roles (id_project, id_user, role) VALUES (?, ?, ?)",
                 [$projectId, $projectData['user_id'], 'creator']
@@ -47,7 +44,6 @@
             foreach ($fields as $key => $value) {
                 if (in_array($key, $allowed)) {
                     $updates[] = "`$key` = ?";
-                    // Убедитесь, что is_public обрабатывается как целое число (0 или 1)
                     $params[] = ($key === 'is_public') ? (int)$value : $value;
                 }
             }
@@ -66,31 +62,27 @@
                 [$projectId]
             );
 
-            // Получение столбцов проекта
             $result = $this->db->Query(
                 "SELECT id FROM columns WHERE project_id = ?",
                 [$projectId]
             );
             $columns = $result->fetch_all(MYSQLI_ASSOC);
 
-            // Удаление задач и связанных данных
-            // Создаем экземпляр TasksContext здесь для использования в этом методе.
-            $tasksContext = new TasksContext($this->db); // Убедитесь, что TasksContext правильно инициализирован
+            $tasksContext = new TasksContext($this->db);
             foreach ($columns as $column) {
                 $tasksContext->deleteTasksByColumn($column['id']);
             }
 
-            // Удаление столбцов проекта
             $this->db->QueryExecute(
                 "DELETE FROM columns WHERE project_id = ?",
                 [$projectId]
             );
 
-            // Удаление самого проекта
             $this->db->QueryExecute(
                 "DELETE FROM projects WHERE id = ?",
                 [$projectId]
             );
+            // Уведомление пользователя будет реализовано на стороне клиента (в projects.php) через alert
         }
 
         public function removeMember(int $projectId, int $userId): void {
@@ -102,7 +94,6 @@
         }
 
         public function addMember(int $projectId, int $userId, string $role): void {
-            // Проверка существования связи
             $result = $this->db->Query(
                 "SELECT * FROM project_roles
                 WHERE id_project = ? AND id_user = ?",
@@ -161,7 +152,6 @@
             return $result->fetch_all(MYSQLI_ASSOC);
         }
             //asdasdasd
-        // Новая функция для получения всех проектов для конкретного пользователя (публичных и приватных)
         public function getAllProjectsForUser(int $userId): array {
             $result = $this->db->Query(
                 "SELECT
@@ -189,7 +179,6 @@
             return $result->fetch_all(MYSQLI_ASSOC);
         }
 
-
         public function getProjectMembers(int $projectId): array {
             $result = $this->db->Query(
                 "SELECT u.id, u.name, u.surname
@@ -199,6 +188,21 @@
                 [$projectId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
+        }
+
+        // Новый метод для получения создателя проекта
+        public function getProjectCreator(int $projectId): ?array {
+            $result = $this->db->Query(
+                "SELECT u.id, u.name, u.surname, u.middlename
+                FROM project_roles pr
+                JOIN users u ON pr.id_user = u.id
+                WHERE pr.id_project = ? AND pr.role = 'creator'",
+                [$projectId]
+            );
+            if ($data = $result->fetch_assoc()) {
+                return $data;
+            }
+            return null;
         }
     }
 ?>
