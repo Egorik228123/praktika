@@ -355,7 +355,7 @@ const TaskManager = (() => {
             
             document.getElementById('projectNameInput').value = project.name;
             document.getElementById('projectDescriptionInput').value = project.description || '';
-            document.getElementById('projectPublic').checked = project.is_public == 1;
+            document.getElementById('projectPublic').checked = project.isPublic;
 
             // Загрузка участников
             const members = await getProjectMembers(currentProjectId);
