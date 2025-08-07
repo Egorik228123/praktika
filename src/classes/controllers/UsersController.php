@@ -30,7 +30,7 @@
                 }
 
                 $result = $this->usersContext->deleteUser($userId);
-                // После успешного удаления пользователя, завершаем сессию
+                
                 session_start();
                 session_destroy();
                 return ['success' => true, 'data' => $result];
@@ -42,9 +42,19 @@
 
         }
 
-        public function updateUser(int $userId, array $userData) {
+        public function updateUser(array $postData) {
             try {
-                if ($userId <= 0) {
+                $userData = [
+                    'id' => $postData['id'],
+                    'surname' => $postData['surname'],
+                    'name' => $postData['name'],
+                    'middlename' => $postData['middlename'],
+                    'bio' => $postData['bio']
+                ];
+                if (isset($postData['password']) && !empty($postData['password'])) {
+                    $userData['password'] = $postData['password'];
+                }
+                if ($userData['id'] <= 0) {
                     $this->addError("Некорректный ID");
                     return ['success' => false, 'errors' => $this->errors];
                 }
@@ -54,13 +64,13 @@
                     return ['success' => false, 'errors' => $this->errors];
                 }
 
-                $user = $this->usersContext->GetById($userId);
+                $user = $this->usersContext->GetById($userData['id']);
                 if (!$user) {
                     $this->addError("Пользователь не найден");
                     return ['success' => false, 'errors' => $this->errors];
                 }
 
-                $this->usersContext->UpdateUser($userId, $userData);
+                $this->usersContext->UpdateUser($userData['id'], $userData);
                 return ['success' => true];
             }
             catch(Exception $e) {
@@ -173,22 +183,12 @@
                         $response = $controller->getUserById($_POST['id']);
                         break;
                     case 'getAllUsers':
-                        $response = $controller->getAllUsers();
+                        $response = $controller->getAllUsers($_POST);
                         break;
                     case 'updateUser':
-                        $userData = [
-                            'surname' => $_POST['surname'],
-                            'name' => $_POST['name'],
-                            'middlename' => $_POST['middlename'],
-                            'bio' => $_POST['bio']
-                        ];
-                        if (isset($_POST['password']) && !empty($_POST['password'])) {
-                            $userData['password'] = $_POST['password'];
-                        }
-                        $response = $controller->updateUser($_POST['id'], $userData);
+                        $response = $controller->updateUser($_POST);
                         break;
-                    case 'deleteUser': // Добавлен новый case для удаления пользователя
-                        // Проверяем, что пользователь авторизован, прежде чем разрешить удаление
+                    case 'deleteUser':
                         session_start();
                         if (!isset($_SESSION['user']) || $_SESSION['user']['id'] != $_POST['id']) {
                              $response = ['success' => false, 'errors' => ['Недостаточно прав для удаления этого аккаунта.']];

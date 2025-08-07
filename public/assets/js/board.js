@@ -9,9 +9,9 @@ const TaskManager = (() => {
     function init(projectId) {
         currentProjectId = projectId;
         initEventListeners();
-        loadUsers();
         getProject();
         getColumns();
+        loadUsers();
     }
     
     // Загрузка пользователей
@@ -65,8 +65,11 @@ const TaskManager = (() => {
         
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
-            if (response.success) {
+            if (response.success && response.data != null) {
                 document.getElementById('projectName').textContent = response.data.name;
+            }
+            else {
+
             }
         } catch (error) {
             console.error('Ошибка загрузки проекта:', error);
@@ -404,7 +407,6 @@ const TaskManager = (() => {
     function renderMembers(members) {
         const container = document.getElementById('projectMembersList');
         container.innerHTML = '';
-        
         members.forEach(member => {
             const memberEl = document.createElement('div');
             memberEl.className = 'member-item';
@@ -470,8 +472,12 @@ const TaskManager = (() => {
     }
 
     // Удаление участника
-    async function removeProjectMember(userId) {
+    async function removeProjectMember(e, userId) {
         if (!confirm('Удалить участника из проекта?')) return;
+
+        if (e) {
+            e.preventDefault();
+        }
 
         const formData = new FormData();
         formData.append('action', 'removeMember');
@@ -736,7 +742,7 @@ const TaskManager = (() => {
             if (e.target.classList.contains('remove-member')) {
                 const memberItem = e.target.closest('.member-item');
                 const userId = memberItem.dataset.userId;
-                removeProjectMember(userId);
+                removeProjectMember(e, userId);
             }
         });
     }

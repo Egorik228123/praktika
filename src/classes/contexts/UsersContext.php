@@ -82,8 +82,16 @@
 
         public function getAllUsers(): array {
             try {
-                $result = $this->db->Query("SELECT * FROM users");
-                return $result->fetch_all(MYSQLI_ASSOC);
+                $result = $this->db->Query("SELECT id, name, surname FROM users");
+                $users = [];
+                
+                if($result->num_rows > 0) {
+                    $users = [];
+                    while($row = $result->fetch_assoc()) {
+                        $users[] = new Users($row);
+                    }
+                }
+                return $users;
             }
             catch(mysqli_sql_exception $e) {
                 throw new Exception("Ошибка загрузки пользователей: " . $e->getMessage());

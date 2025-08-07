@@ -86,11 +86,14 @@
         }
 
         public function removeMember(int $projectId, int $userId): void {
-            $this->db->QueryExecute(
+            $affectedRows = $this->db->QueryExecute(
                 "DELETE FROM project_roles
-                WHERE id_project = ? AND id_user = ?",
+                WHERE id_project = ? AND id_user = ? AND role != 'creator'",
                 [$projectId, $userId]
             );
+            if ($affectedRows === 0) {
+                throw new Exception("Не удалось удалить участника");
+            }
         }
 
         public function addMember(int $projectId, int $userId, string $role): void {
@@ -151,7 +154,7 @@
             );
             return $result->fetch_all(MYSQLI_ASSOC);
         }
-            //asdasdasd
+
         public function getAllProjectsForUser(int $userId): array {
             $result = $this->db->Query(
                 "SELECT
@@ -190,7 +193,7 @@
             return $result->fetch_all(MYSQLI_ASSOC);
         }
 
-        // Новый метод для получения создателя проекта
+        
         public function getProjectCreator(int $projectId): ?array {
             $result = $this->db->Query(
                 "SELECT u.id, u.name, u.surname, u.middlename

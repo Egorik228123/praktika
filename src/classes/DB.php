@@ -32,7 +32,7 @@
                 $query->bind_param($types, ...$params);
             }
             $query->execute();
-            $result = $query->affected_rows;
+            $result = $query->affected_rows;$result = $query->affected_rows;
 
             return $result;
         }

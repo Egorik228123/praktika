@@ -22,7 +22,7 @@
 
     <script>
         let allProjects = [];
-        let currentUserId = <?= $_SESSION['user']['id'] ?? 'null' ?>;
+        let currentUserId = <?= $_SESSION['user']['id'] ?>;
 
         function getProjects() {
             const formData = new FormData();

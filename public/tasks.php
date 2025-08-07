@@ -11,7 +11,8 @@
     <script src="assets/js/common.js"></script>
     <script src="assets/js/board.js"></script>
     <script>
-        let projectId = <?=$_GET['projectId'] ?? 0?>;
+        let projectId = <?=$_GET['projectId'] ?? 0 ?>;
+        let userId = <?=$_SESSION['user']['id'] ?? 0 ?>;
         document.addEventListener('DOMContentLoaded', () => {
             TaskManager.init(projectId);
         });

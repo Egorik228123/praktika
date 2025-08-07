@@ -32,11 +32,7 @@
         }
 
         public function deleteTask(int $taskId): void {
-            // Удаление связанных подзадач
-            $this->db->QueryExecute("DELETE FROM subtasks WHERE task_id = ?", [$taskId]);
-            // Удаление связи с ответственными
-            $this->db->QueryExecute("DELETE FROM task_assignees WHERE task_id = ?", [$taskId]);
-            // Удаление задачи
+            // Удаление задачи (и связанных данных: подзадачи, ответственные)
             $this->db->QueryExecute("DELETE FROM tasks WHERE id = ?", [$taskId]);
         }
 
@@ -209,7 +205,6 @@
             
             // Добавляем новых ответственных
             foreach ($assigneeIds as $userId) {
-                // Убедимся, что userId является целым числом, чтобы избежать ошибок SQL
                 $userId = (int) $userId;
                 if ($userId > 0) {
                     $this->addAssignee($taskId, $userId);
@@ -228,9 +223,7 @@
             $updatedSubtaskIds = [];
 
             foreach ($subtasks as $subtask) {
-                // If subtask['id'] is not set or is 0, it's a new subtask
                 if (isset($subtask['id']) && $subtask['id'] > 0) {
-                    // Обновление существующей подзадачи
                     $this->db->QueryExecute(
                         "UPDATE subtasks SET name = ?, description = ? WHERE id = ?",
                         [$subtask['name'], $subtask['description'], $subtask['id']]
