@@ -407,14 +407,16 @@ const TaskManager = (() => {
     function renderMembers(members) {
         const container = document.getElementById('projectMembersList');
         container.innerHTML = '';
-        members.forEach(member => {
+        members.forEach((member, index) => {
             const memberEl = document.createElement('div');
             memberEl.className = 'member-item';
             memberEl.dataset.userId = member.id;
             memberEl.innerHTML = `
                 <span>${member.surname} ${member.name}</span>
-                <button class="remove-member">×</button>
             `;
+            if(index !== 0) {
+                memberEl.innerHTML += `<button class="remove-member">×</button>`;
+            }
             container.appendChild(memberEl);
         });
     }

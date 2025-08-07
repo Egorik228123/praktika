@@ -184,10 +184,13 @@
 
         public function getProjectMembers(int $projectId): array {
             $result = $this->db->Query(
-                "SELECT u.id, u.name, u.surname
+                "SELECT u.id, u.name, u.surname, pr.role
                 FROM project_roles pr
                 JOIN users u ON pr.id_user = u.id
-                WHERE pr.id_project = ?",
+                WHERE pr.id_project = ?
+                ORDER BY
+                    pr.role = 'creator' DESC, 
+                    u.name ASC", // Это для того, чтобы создатель был первым
                 [$projectId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
