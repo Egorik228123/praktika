@@ -158,7 +158,6 @@
                 <div class="profile-text">
                     <h3></h3>
                     <span class="email"></span>
-                    <span class="last-activity">Последняя активность mm:hh dd.mm.yyyy</span>
                 </div>
             </div>
             
