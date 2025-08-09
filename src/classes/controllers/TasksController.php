@@ -22,7 +22,13 @@
                     $this->addError("Некорректный ID задачи");
                     return ['success' => false, 'errors' => $this->errors];
                 }
-
+                if (empty($taskData['due_date'])) {
+                    $taskData['due_date'] = null;
+                }
+                if (empty($taskData['description'])) {
+                    $taskData['description'] = null;
+                }
+                
                 $this->tasksContext->updateTask($taskId, [
                     'name' => $taskData['name'] ?? null,
                     'description' => $taskData['description'] ?? null,
@@ -116,9 +122,11 @@
 
         public function createTask(array $taskData): array {
             try {
-                // Добавить текущее время к дате
-                if (!empty($taskData['due_date'])) {
-                    $taskData['due_date'] .= ' ' . date('H:i:s');
+                if (empty($taskData['due_date'])) {
+                    $taskData['due_date'] = null;
+                }
+                if (empty($taskData['description'])) {
+                    $taskData['description'] = null;
                 }
                 
                 $taskId = $this->tasksContext->createTask($taskData);
