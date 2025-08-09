@@ -24,7 +24,7 @@ function setupModal(modalId, openBtnSelector, closeBtnSelector) {
 
     if (openBtn) {
         openBtn.addEventListener('click', () => {
-            modal.style.display = 'block';
+            modal.style.display = 'flex';
         });
     }
 
@@ -49,7 +49,7 @@ function deleteAccount(userId) {
     ajax('../src/classes/controllers/UsersController.php', Data, function(response) {
         if (response.success) {
             alert('Аккаунт успешно удален.');
-            window.location.href = 'login.php'; // Перенаправляем на страницу входа
+            window.location.href = 'login.php';
         } else {
             alert('Ошибка при удалении аккаунта: ' + response.errors.join(', '));
         }

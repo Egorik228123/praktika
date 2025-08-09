@@ -137,7 +137,7 @@
             const closeSpan = document.querySelector('#createProjectModal .close');
 
             createProjectBtn.onclick = function() {
-                createProjectModal.style.display = "block";
+                createProjectModal.style.display = "flex";
             }
 
             closeSpan.onclick = function() {

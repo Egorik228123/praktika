@@ -96,7 +96,7 @@
             getUser();
             
             document.getElementById('editProfileBtn').addEventListener('click', function() {
-                document.getElementById('profileModal').style.display = 'block';
+                document.getElementById('profileModal').style.display = 'flex';
             });
             
             document.querySelector('#profileModal .btn-primary').addEventListener('click', function(e) {
