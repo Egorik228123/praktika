@@ -475,11 +475,11 @@ const TaskManager = (() => {
 
     // Удаление участника
     async function removeProjectMember(e, userId) {
-        if (!confirm('Удалить участника из проекта?')) return;
-
         if (e) {
             e.preventDefault();
         }
+        
+        if (!confirm('Удалить участника из проекта?')) return;
 
         const formData = new FormData();
         formData.append('action', 'removeMember');
