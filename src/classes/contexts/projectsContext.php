@@ -229,5 +229,13 @@
             }
             return null;
         }
+
+        public function isUserMemberOfProject(int $userId, int $projectId): bool {
+            $result = $this->db->Query(
+                "SELECT 1 FROM project_roles WHERE id_user = ? AND id_project = ?",
+                [$userId, $projectId]
+            );
+            return $result->num_rows > 0;
+        }
     }
 ?>

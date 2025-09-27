@@ -511,22 +511,31 @@ const TaskManager = (() => {
 
     // Добавление участника
     async function addProjectMember() {
-        const select = document.getElementById('memberSelect');
-        const userId = select.value;
+        const userSelect = document.getElementById('memberSelect');
+        const roleSelect = document.getElementById('newMemberRoleSelect');
+        
+        const userId = userSelect.value;
+        const role = roleSelect.value;
+
         if (!userId) return;
 
         const formData = new FormData();
         formData.append('action', 'addProjectMember');
         formData.append('project_id', currentProjectId);
         formData.append('user_id', userId);
+        formData.append('role', role);
 
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
             if (response.success) {
+                // Перезагружаем участников
                 const members = await getProjectMembers(currentProjectId);
                 renderMembers(members);
+                // Сбрасываем выбор
+                userSelect.value = '';
+                roleSelect.value = 'user';
             } else {
-                 alert(response.errors.join('\n'));
+                alert(response.errors.join('\n'));
                 console.error('Ошибка добавления участника:', response.errors);
             }
         } catch (error) {
@@ -536,6 +545,9 @@ const TaskManager = (() => {
 
     // Удаление участника
     async function removeProjectMember(userId) {
+        // Prevent default button behavior if inside a form
+        event?.preventDefault?.();
+
         if (!confirm('Удалить участника из проекта?')) return;
 
         const formData = new FormData();

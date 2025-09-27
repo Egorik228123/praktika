@@ -5,6 +5,26 @@
         header("Location: login.php");
         exit();
     }
+
+    require_once __DIR__ . '/../src/classes/DB.php';
+    require_once __DIR__ . '/../src/classes/contexts/ProjectsContext.php';
+
+    if (!isset($_GET['projectId']) || !is_numeric($_GET['projectId'])) {
+        echo "Ошибка: неверный ID проекта.";
+        exit();
+    }
+
+    $projectId = (int)$_GET['projectId'];
+    $userId = (int)$_SESSION['user']['id'];
+
+    $db = new DBConnect();
+    $projectsContext = new ProjectsContext($db);
+    
+    if (!$projectsContext->isUserMemberOfProject($userId, $projectId)) {
+        http_response_code(403);
+        echo "Доступ запрещен. Вы не являетесь участником этого проекта.";
+        exit();
+    }
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -178,8 +198,11 @@
                     <label>Участники проекта:</label>
                     <div class="scrollable-container" style="max-height: 200px;" id="projectMembersList"></div>
                     <div class="member-controls">
-                        <select id="memberSelect" class="searchable-select">
-                            </select>
+                        <select id="memberSelect" class="searchable-select" style="flex-grow: 1;"></select>
+                        <select id="newMemberRoleSelect">
+                            <option value="user" selected>Пользователь</option>
+                            <option value="admin">Администратор</option>
+                        </select>
                         <button type="button" id="addMemberBtn">+ Добавить</button>
                     </div>
                 </div>

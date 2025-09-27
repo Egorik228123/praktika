@@ -126,13 +126,19 @@
             }
         }
 
-        public function addProjectMember(int $projectId, int $userId, int $callingUserId): array {
+        public function addProjectMember(int $projectId, int $userId, string $role, int $callingUserId): array {
             try {
-                 $role = $this->projectsContext->getUserRoleInProject($callingUserId, $projectId);
-                if ($role !== 'creator') {
+                 $callerRole = $this->projectsContext->getUserRoleInProject($callingUserId, $projectId);
+                if ($callerRole !== 'creator') {
                     return ['success' => false, 'errors' => ['Только создатель может добавлять участников.']];
                 }
-                $this->projectsContext->addMember($projectId, $userId, 'user');
+
+                // Валидация роли
+                if (!in_array($role, ['admin', 'user'])) {
+                    return ['success' => false, 'errors' => ['Некорректная роль.']];
+                }
+
+                $this->projectsContext->addMember($projectId, $userId, $role);
                 return ['success' => true];
             } catch (Exception $e) {
                 return ['success' => false, 'errors' => [$e->getMessage()]];
@@ -215,8 +221,13 @@
                     case 'deleteProject': 
                         $response = $controller->deleteProject((int)$_POST['project_id'], (int)$_POST['user_id']); 
                         break;
-                    case 'addProjectMember': 
-                        $response = $controller->addProjectMember((int)$_POST['project_id'], (int)$_POST['user_id'], $userId); 
+                    case 'addProjectMember':
+                        $response = $controller->addProjectMember(
+                            (int)$_POST['project_id'],
+                            (int)$_POST['user_id'],
+                            $_POST['role'] ?? 'user',
+                            $userId
+                        );
                         break;
                     case 'getMembers': 
                         $response = $controller->getMembers((int)$_POST['project_id']); 
