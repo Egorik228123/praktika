@@ -1,6 +1,7 @@
 const TaskManager = (() => {
     let currentTaskId = null;
     let currentProjectId = null;
+    let currentUserRole = null; // Роль текущего пользователя в проекте
     let allUsers = [];
     let columns = [];
     let firstColumnId = 0;
@@ -10,8 +11,64 @@ const TaskManager = (() => {
         currentProjectId = projectId;
         initEventListeners();
         getProject();
-        getColumns();
+        // Загружаем роль пользователя, а затем столбцы и применяем права
+        loadCurrentUserRole().then(() => {
+            getColumns();
+            applyPermissions();
+        });
         loadUsers();
+    }
+
+    // Загрузка роли текущего пользователя
+    async function loadCurrentUserRole() {
+        const formData = new FormData();
+        formData.append('action', 'getProjectRole');
+        formData.append('project_id', currentProjectId);
+
+        try {
+            const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
+            if (response.success) {
+                currentUserRole = response.data.role;
+            } else {
+                console.error('Ошибка загрузки роли пользователя:', response.errors);
+            }
+        } catch (error) {
+            console.error('Ошибка AJAX при загрузке роли:', error);
+        }
+    }
+
+    // Применение прав в интерфейсе
+    function applyPermissions() {
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const projectSettingsElements = document.querySelectorAll('.member-controls, #saveProjectBtn');
+
+        // Скрываем элементы для роли "user"
+        if (currentUserRole === 'user') {
+            if (addTaskBtn) addTaskBtn.style.display = 'none';
+        }
+
+        // Только создатель может управлять настройками проекта
+        if (currentUserRole !== 'creator') {
+             projectSettingsElements.forEach(el => {
+                if(el) el.style.display = 'none';
+             });
+             const projectNameInput = document.getElementById('projectNameInput');
+             const projectDescriptionInput = document.getElementById('projectDescriptionInput');
+             const projectPublic = document.getElementById('projectPublic');
+             if(projectNameInput) projectNameInput.readOnly = true;
+             if(projectDescriptionInput) projectDescriptionInput.readOnly = true;
+             if(projectPublic) projectPublic.disabled = true;
+        } else {
+             projectSettingsElements.forEach(el => {
+                if(el) el.style.display = 'block';
+             });
+             const projectNameInput = document.getElementById('projectNameInput');
+             const projectDescriptionInput = document.getElementById('projectDescriptionInput');
+             const projectPublic = document.getElementById('projectPublic');
+             if(projectNameInput) projectNameInput.readOnly = false;
+             if(projectDescriptionInput) projectDescriptionInput.readOnly = false;
+             if(projectPublic) projectPublic.disabled = false;
+        }
     }
     
     // Загрузка пользователей
@@ -42,7 +99,6 @@ const TaskManager = (() => {
             if (!select) return;
             
             select.innerHTML = '';
-            // Добавляем пустую опцию по умолчанию
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             defaultOption.textContent = 'Выберите пользователя';
@@ -67,9 +123,6 @@ const TaskManager = (() => {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
             if (response.success && response.data != null) {
                 document.getElementById('projectName').textContent = response.data.name;
-            }
-            else {
-
             }
         } catch (error) {
             console.error('Ошибка загрузки проекта:', error);
@@ -100,13 +153,16 @@ const TaskManager = (() => {
     function renderColumns(columns) {
         const container = document.querySelector(".board");
         container.innerHTML = '';
-        
+        const canManage = currentUserRole === 'creator' || currentUserRole === 'admin';
+
         if (columns.length === 0) {
-            container.innerHTML = `
-                <div id="add-column" class="add-column">
-                    <span>+</span>
-                </div>
-            `;
+            if (canManage) {
+                container.innerHTML = `
+                    <div id="add-column" class="add-column">
+                        <span>+</span>
+                    </div>
+                `;
+            }
             return;
         }
         
@@ -114,10 +170,11 @@ const TaskManager = (() => {
             const card = document.createElement('div');
             card.className = 'column';
             card.dataset.columnId = column.id;
+            const deleteButtonHTML = canManage ? `<button class="delete-column-btn" data-column-id="${column.id}">×</button>` : '';
             card.innerHTML = `
                 <div class="column-header">
                     <h2>${column.name}</h2>
-                    <button class="delete-column-btn" data-column-id="${column.id}">×</button>
+                    ${deleteButtonHTML}
                 </div>
                 <div class="tasks-container" ondragover="TaskManager.handleDragOver(event)" ondrop="TaskManager.handleDrop(event, ${column.id})"></div>
             `;
@@ -125,11 +182,13 @@ const TaskManager = (() => {
             getTasks(column.id);
         });
         
-        const createColumn = document.createElement('div');
-        createColumn.id = 'add-column';
-        createColumn.className = 'add-column';
-        createColumn.innerHTML = `<span>+</span>`;
-        container.appendChild(createColumn);
+        if (canManage) {
+            const createColumn = document.createElement('div');
+            createColumn.id = 'add-column';
+            createColumn.className = 'add-column';
+            createColumn.innerHTML = `<span>+</span>`;
+            container.appendChild(createColumn);
+        }
     }
     
     // Загрузка задач для столбца
@@ -159,8 +218,8 @@ const TaskManager = (() => {
             const card = document.createElement('div');
             card.className = 'task';
             card.dataset.taskId = task.id;
-            card.draggable = true; // Сделать задачу перетаскиваемой
-            card.ondragstart = (event) => TaskManager.handleDragStart(event, task.id); // Обработчик начала перетаскивания
+            card.draggable = true;
+            card.ondragstart = (event) => TaskManager.handleDragStart(event, task.id);
             card.innerHTML = `
                 <h3>${task.name}</h3>
                 <p>Ответственный: ${task.assignee || 'Не назначен'}</p>
@@ -188,6 +247,8 @@ const TaskManager = (() => {
                 document.getElementById("columnName").value = '';
                 hideModal('columnModal');
                 getColumns();
+            } else {
+                alert(response.errors.join('\n'));
             }
         } catch (error) {
             console.error('Ошибка создания столбца:', error);
@@ -210,6 +271,7 @@ const TaskManager = (() => {
             if (response.success) {
                 getColumns();
             } else {
+                alert(response.errors.join('\n'));
                 console.error('Ошибка удаления столбца:', response.errors);
             }
         } catch (error) {
@@ -246,6 +308,7 @@ const TaskManager = (() => {
                 getTasks(firstColumnId);
                 resetTaskForm();
             } else {
+                alert(response.errors.join('\n'));
                 console.error('Ошибка создания задачи:', response.errors);
             }
         } catch (error) {
@@ -271,32 +334,27 @@ const TaskManager = (() => {
         formData.append('description', description);
         formData.append('due_date', deadline);
         
-        // Ответственные
         const assignees = Array.from(
             document.querySelectorAll('#editAssigneesList .assignee-item')
         ).map(el => el.dataset.userId);
         formData.append('assignees', JSON.stringify(assignees));
         
-        // Подзадачи
         const subtasks = Array.from(
             document.querySelectorAll('#subtasksList .subtask-item')
         ).map(el => ({
-            id: el.dataset.subtaskId && !isNaN(parseInt(el.dataset.subtaskId)) ? parseInt(el.dataset.subtaskId) : 0, // Set to 0 if new, parse if existing
+            id: el.dataset.subtaskId && !isNaN(parseInt(el.dataset.subtaskId)) ? parseInt(el.dataset.subtaskId) : 0,
             name: el.querySelector('.subtask-name').textContent,
             description: el.querySelector('.subtask-description')?.textContent || ''
         }));
         formData.append('subtasks', JSON.stringify(subtasks));
 
         try {
-            const response = await ajaxRequest(
-                '../src/classes/controllers/TasksController.php', 
-                formData
-            );
+            const response = await ajaxRequest('../src/classes/controllers/TasksController.php', formData);
             if (response.success) {
                 hideModal('taskDetailsModal');
-                // Перезагружаем все задачи на доске
                 columns.forEach(column => getTasks(column.id));
             } else {
+                 alert(response.errors.join('\n'));
                 console.error('Ошибка обновления задачи:', response.errors);
             }
         } catch (error) {
@@ -316,9 +374,9 @@ const TaskManager = (() => {
             const response = await ajaxRequest('../src/classes/controllers/TasksController.php', formData);
             if (response.success) {
                 hideModal('taskDetailsModal');
-                // Перезагружаем все задачи на доске
                 columns.forEach(column => getTasks(column.id));
             } else {
+                alert(response.errors.join('\n'));
                 console.error('Ошибка удаления задачи:', response.errors);
             }
         } catch (error) {
@@ -346,10 +404,9 @@ const TaskManager = (() => {
         }
     }
 
-        // Загрузка данных проекта для модального окна
+    // Загрузка данных проекта для модального окна
     async function initProjectModal() {
         try {
-            // Загрузка данных проекта
             const project = await getProjectDetails(currentProjectId);
             if (!project) {
                 console.error('Не удалось загрузить данные проекта');
@@ -360,9 +417,9 @@ const TaskManager = (() => {
             document.getElementById('projectDescriptionInput').value = project.description || '';
             document.getElementById('projectPublic').checked = project.isPublic;
 
-            // Загрузка участников
             const members = await getProjectMembers(currentProjectId);
             renderMembers(members);
+            applyPermissions(); // Применяем права для модального окна
         } catch (error) {
             console.error('Ошибка инициализации модалки проекта:', error);
         }
@@ -375,15 +432,11 @@ const TaskManager = (() => {
         
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
-            if (response.success) {
-                return response.data;
-            } else {
-                console.error('Ошибка загрузки проекта:', response.errors);
-            }
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('Ошибка загрузки проекта:', error);
+            return null;
         }
-        return null;
     }
 
     async function getProjectMembers(projectId) {
@@ -393,30 +446,38 @@ const TaskManager = (() => {
         
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
-            if (response.success) {
-                return response.data;
-            } else {
-                console.error('Ошибка загрузки участников:', response.errors);
-            }
+            return response.success ? response.data : [];
         } catch (error) {
             console.error('Ошибка загрузки участников:', error);
+            return [];
         }
-        return [];
     }
 
+    // Рендер участников с ролями
     function renderMembers(members) {
         const container = document.getElementById('projectMembersList');
         container.innerHTML = '';
-        members.forEach((member, index) => {
+        members.forEach(member => {
             const memberEl = document.createElement('div');
             memberEl.className = 'member-item';
             memberEl.dataset.userId = member.id;
-            memberEl.innerHTML = `
-                <span>${member.surname} ${member.name}</span>
-            `;
-            if(index !== 0) {
-                memberEl.innerHTML += `<button class="remove-member">×</button>`;
+
+            let memberHTML = `<span>${member.surname} ${member.name}</span>`;
+
+            if (currentUserRole === 'creator' && member.role !== 'creator') {
+                memberHTML += `
+                    <select class="role-select" data-user-id="${member.id}">
+                        <option value="admin" ${member.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                        <option value="user" ${member.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                    </select>
+                    <button class="remove-member">×</button>
+                `;
+            } else {
+                const roleText = member.role === 'creator' ? 'Создатель' : (member.role === 'admin' ? 'Администратор' : 'Пользователь');
+                memberHTML += `<span class="role-text"> - ${roleText}</span>`;
             }
+            
+            memberEl.innerHTML = memberHTML;
             container.appendChild(memberEl);
         });
     }
@@ -437,10 +498,10 @@ const TaskManager = (() => {
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
             if (response.success) {
-                // Обновляем название проекта в заголовке
                 document.getElementById('projectName').textContent = name;
                 hideModal('projectModal');
             } else {
+                alert(response.errors.join('\n'));
                 console.error('Ошибка обновления проекта:', response.errors);
             }
         } catch (error) {
@@ -462,10 +523,10 @@ const TaskManager = (() => {
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
             if (response.success) {
-                // Перезагружаем участников
                 const members = await getProjectMembers(currentProjectId);
                 renderMembers(members);
             } else {
+                 alert(response.errors.join('\n'));
                 console.error('Ошибка добавления участника:', response.errors);
             }
         } catch (error) {
@@ -474,11 +535,7 @@ const TaskManager = (() => {
     }
 
     // Удаление участника
-    async function removeProjectMember(e, userId) {
-        if (e) {
-            e.preventDefault();
-        }
-        
+    async function removeProjectMember(userId) {
         if (!confirm('Удалить участника из проекта?')) return;
 
         const formData = new FormData();
@@ -489,14 +546,36 @@ const TaskManager = (() => {
         try {
             const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
             if (response.success) {
-                // Перезагружаем участников
                 const members = await getProjectMembers(currentProjectId);
                 renderMembers(members);
             } else {
+                alert(response.errors.join('\n'));
                 console.error('Ошибка удаления участника:', response.errors);
             }
         } catch (error) {
             console.error('Ошибка удаления участника:', error);
+        }
+    }
+
+    // Обновление роли участника
+    async function updateMemberRole(userId, newRole) {
+        const formData = new FormData();
+        formData.append('action', 'updateMemberRole');
+        formData.append('project_id', currentProjectId);
+        formData.append('user_id', userId);
+        formData.append('role', newRole);
+
+        try {
+            const response = await ajaxRequest('../src/classes/controllers/ProjectsController.php', formData);
+            if (!response.success) {
+                console.error('Ошибка обновления роли:', response.errors);
+                alert(response.errors.join('\n'));
+                // Если ошибка, перезагружаем список, чтобы сбросить select
+                const members = await getProjectMembers(currentProjectId);
+                renderMembers(members);
+            }
+        } catch (error) {
+            console.error('Ошибка AJAX при обновлении роли:', error);
         }
     }
     
@@ -505,7 +584,6 @@ const TaskManager = (() => {
         document.getElementById('editTaskName').value = data.task.name || '';
         document.getElementById('editTaskDescription').value = data.task.description || '';
         
-        // Отображаем только дату (без времени) для редактирования
         if (data.task.due_date) {
             const [datePart] = data.task.due_date.split(' ');
             document.getElementById('editTaskDeadline').value = datePart;
@@ -513,39 +591,42 @@ const TaskManager = (() => {
             document.getElementById('editTaskDeadline').value = '';
         }
         
-        // Заполнение ответственных
         const assigneesContainer = document.getElementById('editAssigneesList');
         assigneesContainer.innerHTML = '';
         data.assignees.forEach(assignee => {
-            const user = allUsers.find(u => u.id == assignee.id); // Исправлено: assignee.id вместо assignee.user_id
+            const user = allUsers.find(u => u.id == assignee.id);
             if (user) {
                 const div = document.createElement('div');
                 div.className = 'assignee-item';
-                div.dataset.userId = user.id; // Используем user.id
-                div.innerHTML = `
-                    <span>${user.surname} ${user.name}</span>
-                    <button class="remove-assignee">×</button>
-                `;
+                div.dataset.userId = user.id;
+                div.innerHTML = `<span>${user.surname} ${user.name}</span><button class="remove-assignee">×</button>`;
                 assigneesContainer.appendChild(div);
             }
         });
         
-        // Заполнение подзадач
         const subtasksContainer = document.getElementById('subtasksList');
         subtasksContainer.innerHTML = '';
         data.subtasks.forEach(subtask => {
             const div = document.createElement('div');
             div.className = 'subtask-item';
             div.dataset.subtaskId = subtask.id;
-            div.innerHTML = `
-                <div class="subtask-info">
-                    <div class="subtask-name">${subtask.name}</div>
-                    <div class="subtask-description">${subtask.description || ''}</div>
-                </div>
-                <button class="remove-subtask">×</button>
-            `;
+            div.innerHTML = `<div class="subtask-info"><div class="subtask-name">${subtask.name}</div><div class="subtask-description">${subtask.description || ''}</div></div><button class="remove-subtask">×</button>`;
             subtasksContainer.appendChild(div);
         });
+
+        // Применяем права в модальном окне задачи
+        const isEditable = currentUserRole === 'admin' || currentUserRole === 'creator';
+        document.getElementById('editTaskName').readOnly = !isEditable;
+        document.getElementById('editTaskDescription').readOnly = !isEditable;
+        document.getElementById('editTaskDeadline').readOnly = !isEditable;
+        document.getElementById('updateTaskBtn').style.display = isEditable ? 'block' : 'none';
+        document.getElementById('deleteTaskBtn').style.display = isEditable ? 'block' : 'none';
+        document.getElementById('editAddAssigneeBtn').style.display = isEditable ? 'block' : 'none';
+        document.getElementById('addSubtaskBtn').style.display = isEditable ? 'block' : 'none';
+        document.querySelector('.add-subtask-fields').style.display = isEditable ? 'block' : 'none';
+        
+        const removeButtons = document.querySelectorAll('#taskDetailsModal .remove-assignee, #taskDetailsModal .remove-subtask');
+        removeButtons.forEach(btn => btn.style.display = isEditable ? 'inline-block' : 'none');
     }
     
     // Добавление ответственного
@@ -557,63 +638,45 @@ const TaskManager = (() => {
         if (!userId) return;
         
         const container = document.getElementById(containerId);
-        const existing = container.querySelector(`.assignee-item[data-user-id="${userId}"]`);
-        if (existing) return;
+        if (container.querySelector(`.assignee-item[data-user-id="${userId}"]`)) return;
         
         const div = document.createElement('div');
         div.className = 'assignee-item';
         div.dataset.userId = userId;
-        div.innerHTML = `
-            <span>${userName}</span>
-            <button class="remove-assignee">×</button>
-        `;
+        div.innerHTML = `<span>${userName}</span><button class="remove-assignee">×</button>`;
         container.appendChild(div);
-        select.value = ''; // Очищаем выбор после добавления
+        select.value = '';
     }
     
     // Добавление подзадачи
     function addSubtask() {
         const name = document.getElementById('newSubtaskName').value;
         const description = document.getElementById('newSubtaskDescription').value;
-        
         if (!name) return;
         
         const container = document.getElementById('subtasksList');
-        // New subtasks should not have an ID or have id: 0 to be treated as new on the server
         const div = document.createElement('div');
         div.className = 'subtask-item';
-        // Do NOT set data-subtaskId for new subtasks, or set it to 0
-        // div.dataset.subtaskId = 0; // Or just omit it. The server checks for id > 0 for updates.
-        div.innerHTML = `
-            <div class="subtask-info">
-                <div class="subtask-name">${name}</div>
-                <div class="subtask-description">${description || ''}</div>
-            </div>
-            <button class="remove-subtask">×</button>
-        `;
+        div.innerHTML = `<div class="subtask-info"><div class="subtask-name">${name}</div><div class="subtask-description">${description || ''}</div></div><button class="remove-subtask">×</button>`;
         container.appendChild(div);
         
-        // Очистка полей
         document.getElementById('newSubtaskName').value = '';
         document.getElementById('newSubtaskDescription').value = '';
     }
     
-    // Сброс формы задачи
     function resetTaskForm() {
         document.getElementById('taskName').value = '';
         document.getElementById('taskDescription').value = '';
         document.getElementById('taskDeadline').value = '';
         document.getElementById('assigneesList').innerHTML = '';
-        document.getElementById('assigneeSelect').value = ''; // Очистка селекта
+        document.getElementById('assigneeSelect').value = '';
     }
     
-    // Показ модального окна
     function showModal(modalId) {
         document.getElementById(modalId).style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
     
-    // Скрытие модального окна
     function hideModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
         document.body.style.overflow = 'auto';
@@ -621,22 +684,18 @@ const TaskManager = (() => {
 
     // Drag and Drop
     let draggedTaskId = null;
-
     function handleDragStart(event, taskId) {
         draggedTaskId = taskId;
         event.dataTransfer.setData('text/plain', taskId);
         event.dataTransfer.effectAllowed = 'move';
     }
-
     function handleDragOver(event) {
-        event.preventDefault(); // Разрешить перетаскивание
+        event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
     }
-
     async function handleDrop(event, newColumnId) {
         event.preventDefault();
         const taskId = event.dataTransfer.getData('text/plain');
-        
         if (taskId && newColumnId) {
             try {
                 const formData = new FormData();
@@ -646,7 +705,6 @@ const TaskManager = (() => {
 
                 const response = await ajaxRequest('../src/classes/controllers/TasksController.php', formData);
                 if (response.success) {
-                    // Перезагрузить задачи для обоих столбцов
                     columns.forEach(column => getTasks(column.id));
                 } else {
                     console.error('Ошибка перемещения задачи:', response.errors);
@@ -660,101 +718,55 @@ const TaskManager = (() => {
     
     // Инициализация обработчиков событий
     function initEventListeners() {
-        // Открытие модалки проекта
         document.getElementById('projectName').addEventListener('click', async () => {
             await initProjectModal();
             showModal('projectModal');
         });
         
-        // Открытие модалки создания задачи
-        document.getElementById('addTaskBtn').addEventListener('click', () => {
-            resetTaskForm(); // Сброс формы при открытии модалки создания
-            showModal('taskModal');
-        });
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        if(addTaskBtn) {
+            addTaskBtn.addEventListener('click', () => {
+                resetTaskForm();
+                showModal('taskModal');
+            });
+        }
         
-        // Создание столбца
         document.getElementById('createColumnBtn').addEventListener('click', createColumn);
-        
-        // Сохранение задачи
         document.getElementById('saveTaskBtn').addEventListener('click', createTask);
-        
-        // Обновление задачи
         document.getElementById('updateTaskBtn').addEventListener('click', updateTask);
-        
-        // Удаление задачи
         document.getElementById('deleteTaskBtn').addEventListener('click', deleteTask);
-        
-        // Добавление ответственных
-        document.getElementById('addAssigneeBtn').addEventListener('click', () => {
-            addAssignee('assigneesList', 'assigneeSelect');
-        });
-        
-        document.getElementById('editAddAssigneeBtn').addEventListener('click', () => {
-            addAssignee('editAssigneesList', 'editAssigneeSelect');
-        });
-        
-        // Добавление подзадачи
+        document.getElementById('addAssigneeBtn').addEventListener('click', () => addAssignee('assigneesList', 'assigneeSelect'));
+        document.getElementById('editAddAssigneeBtn').addEventListener('click', () => addAssignee('editAssigneesList', 'editAssigneeSelect'));
         document.getElementById('addSubtaskBtn').addEventListener('click', addSubtask);
         
-        // Удаление ответственных и подзадач (делегирование)
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-assignee')) {
-                e.target.closest('.assignee-item').remove();
-            }
-            
-            if (e.target.classList.contains('remove-subtask')) {
-                e.target.closest('.subtask-item').remove();
+            if (e.target.classList.contains('remove-assignee')) e.target.closest('.assignee-item').remove();
+            if (e.target.classList.contains('remove-subtask')) e.target.closest('.subtask-item').remove();
+            if (e.target.classList.contains('task-btn')) openTaskDetails(e.target.closest('.task').dataset.taskId);
+            if (e.target.classList.contains('delete-column-btn')) deleteColumn(e.target.dataset.columnId);
+            if (e.target.id === 'add-column' || e.target.closest('#add-column')) showModal('columnModal');
+            if (e.target.classList.contains('remove-member')) removeProjectMember(e.target.closest('.member-item').dataset.userId);
+        });
+
+        document.getElementById('projectMembersList').addEventListener('change', (e) => {
+            if (e.target.classList.contains('role-select')) {
+                updateMemberRole(e.target.dataset.userId, e.target.value);
             }
         });
         
-        // Обработка кликов по задачам (делегирование)
-        document.body.addEventListener('click', (e) => {
-            if (e.target.classList.contains('task-btn')) {
-                const taskId = e.target.closest('.task').dataset.taskId;
-                openTaskDetails(taskId);
-            }
-            
-            if (e.target.classList.contains('delete-column-btn')) {
-                const columnId = e.target.dataset.columnId;
-                deleteColumn(columnId);
-            }
-            
-            if (e.target.id === 'add-column' || e.target.closest('#add-column')) {
-                showModal('columnModal');
-            }
-        });
-        
-        // Закрытие модалок по клику вне области
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    hideModal(modal.id);
-                }
+                if (e.target === modal) hideModal(modal.id);
             });
         });
 
-        // Сохранение проекта
         document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
-        
-        // Добавление участника
         document.getElementById('addMemberBtn').addEventListener('click', addProjectMember);
-        
-        // Удаление участника (делегирование)
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-member')) {
-                const memberItem = e.target.closest('.member-item');
-                const userId = memberItem.dataset.userId;
-                removeProjectMember(e, userId);
-            }
-        });
     }
     
-    // Обертка для AJAX-запросов
     async function ajaxRequest(url, data) {
         return new Promise((resolve) => {
-            ajax(url, data, function(response) {
-                resolve(response);
-            });
+            ajax(url, data, (response) => resolve(response));
         });
     }
     

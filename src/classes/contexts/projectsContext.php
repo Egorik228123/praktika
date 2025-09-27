@@ -155,6 +155,25 @@
             return $result->fetch_all(MYSQLI_ASSOC);
         }
 
+        public function updateMemberRole(int $projectId, int $userId, string $role): void {
+            $this->db->QueryExecute(
+                "UPDATE project_roles SET role = ? WHERE id_project = ? AND id_user = ? AND role != 'creator'",
+                [$role, $projectId, $userId]
+            );
+        }
+
+        public function getUserRoleInProject(int $userId, int $projectId): ?string {
+            $result = $this->db->Query(
+                "SELECT role FROM project_roles WHERE id_user = ? AND id_project = ?",
+                [$userId, $projectId]
+            );
+            if ($data = $result->fetch_assoc()) {
+                return $data['role'];
+            }
+            return null;
+        }
+
+
         public function getAllProjectsForUser(int $userId): array {
             $result = $this->db->Query(
                 "SELECT

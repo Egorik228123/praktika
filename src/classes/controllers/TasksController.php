@@ -1,23 +1,33 @@
 <?php
-    require_once __DIR__ . "/../contexts/tasksContext.php";
-    require_once __DIR__ . "/../DB.php"; // Убедитесь, что DB.php подключен, если TasksContext его использует
+    require_once __DIR__ . "/../contexts/TasksContext.php";
+    require_once __DIR__ . "/../contexts/ProjectsContext.php";
+    require_once __DIR__ . "/../DB.php";
     header('Content-Type: application/json; charset=utf-8');
     
     class TasksController {
         private TasksContext $tasksContext;
+        private ProjectsContext $projectsContext;
         public array $errors = [];
 
         public function __construct() {
             $db = new DBConnect();
             $this->tasksContext = new TasksContext($db);
+            $this->projectsContext = new ProjectsContext($db);
         }
 
         private function addError(string $message): void {
             $this->errors[] = $message;
         }
 
-        public function updateTask(int $taskId, array $taskData): array {
+        public function updateTask(int $taskId, array $taskData, int $userId): array {
             try {
+                $projectId = $this->getProjectIdByTaskId($taskId);
+                if(!$projectId) return ['success' => false, 'errors' => ['Проект не найден.']];
+                $role = $this->projectsContext->getUserRoleInProject($userId, $projectId);
+                if (!in_array($role, ['creator', 'admin'])) {
+                    return ['success' => false, 'errors' => ['У вас нет прав для редактирования задач.']];
+                }
+                
                 if ($taskId <= 0) {
                     $this->addError("Некорректный ID задачи");
                     return ['success' => false, 'errors' => $this->errors];
@@ -35,11 +45,9 @@
                     'due_date' => $taskData['due_date'] ?? null
                 ]);
 
-                // Обработка ответственных
                 $assignees = json_decode($_POST['assignees'] ?? '[]', true);
                 $this->tasksContext->updateAssignees($taskId, $assignees);
 
-                // Обработка подзадач
                 $subtasks = json_decode($_POST['subtasks'] ?? '[]', true);
                 $this->tasksContext->updateSubtasks($taskId, $subtasks);
 
@@ -51,8 +59,15 @@
             }
         }
 
-        public function deleteTask(int $taskId): array {
+        public function deleteTask(int $taskId, int $userId): array {
             try {
+                $projectId = $this->getProjectIdByTaskId($taskId);
+                 if(!$projectId) return ['success' => false, 'errors' => ['Проект не найден.']];
+                $role = $this->projectsContext->getUserRoleInProject($userId, $projectId);
+                if (!in_array($role, ['creator', 'admin'])) {
+                    return ['success' => false, 'errors' => ['У вас нет прав для удаления задач.']];
+                }
+
                 if ($taskId <= 0) {
                     $this->addError("Некорректный ID задачи");
                     return ['success' => false, 'errors' => $this->errors];
@@ -120,8 +135,15 @@
             }
         }
 
-        public function createTask(array $taskData): array {
+        public function createTask(array $taskData, int $userId): array {
             try {
+                $projectId = $this->getProjectIdByColumnId($taskData['column_id']);
+                if(!$projectId) return ['success' => false, 'errors' => ['Проект не найден.']];
+                $role = $this->projectsContext->getUserRoleInProject($userId, $projectId);
+                if (!in_array($role, ['creator', 'admin'])) {
+                    return ['success' => false, 'errors' => ['У вас нет прав для создания задач.']];
+                }
+
                 if (empty($taskData['due_date'])) {
                     $taskData['due_date'] = null;
                 }
@@ -131,11 +153,10 @@
                 
                 $taskId = $this->tasksContext->createTask($taskData);
         
-                // Добавляем ответственных
                 if (isset($taskData['assignees'])) {
                     $assignees = json_decode($taskData['assignees'], true);
-                    foreach ($assignees as $userId) {
-                        $this->tasksContext->addAssignee($taskId, $userId);
+                    foreach ($assignees as $uId) {
+                        $this->tasksContext->addAssignee($taskId, $uId);
                     }
                 }
                 
@@ -196,10 +217,27 @@
             }
         }
 
+        private function getProjectIdByTaskId(int $taskId): ?int {
+            $task = $this->tasksContext->getTaskById($taskId);
+            if (!$task || !$task->column_id) return null;
+            
+            $db = new DBConnect();
+            $result = $db->Query("SELECT project_id FROM columns WHERE id = ?", [$task->column_id]);
+            return ($data = $result->fetch_assoc()) ? $data['project_id'] : null;
+        }
+
+        private function getProjectIdByColumnId(int $columnId): ?int {
+            $db = new DBConnect();
+            $result = $db->Query("SELECT project_id FROM columns WHERE id = ?", [$columnId]);
+            return ($data = $result->fetch_assoc()) ? $data['project_id'] : null;
+        }
+
         // Обработчик запросов
         public static function handleRequest() {
+            session_start();
             $controller = new self();
             $action = $_POST['action'] ?? '';
+            $userId = $_SESSION['user']['id'] ?? 0;
 
             try {
                 switch ($action) {
@@ -209,8 +247,8 @@
                             'description' => $_POST['description'] ?? null,
                             'due_date' => $_POST['due_date'] ?? null,
                             'column_id' => $_POST['column_id'],
-                            'assignees' => $_POST['assignees'] ?? '[]' // Передача assignees
-                        ]);
+                            'assignees' => $_POST['assignees'] ?? '[]'
+                        ], $userId);
                         break;
                     case 'updateTask':
                         $response = $controller->updateTask(
@@ -219,11 +257,12 @@
                                 'name' => $_POST['name'] ?? null,
                                 'description' => $_POST['description'] ?? null,
                                 'due_date' => $_POST['due_date'] ?? null
-                            ]
+                            ],
+                            $userId
                         );
                         break;
                     case 'deleteTask':
-                        $response = $controller->deleteTask((int)$_POST['task_id']);
+                        $response = $controller->deleteTask((int)$_POST['task_id'], $userId);
                         break;
                     case 'moveTask':
                         $response = $controller->moveTask(

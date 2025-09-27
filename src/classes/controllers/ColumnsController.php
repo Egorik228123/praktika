@@ -1,17 +1,21 @@
 <?php
     header('Content-Type: application/json; charset=utf-8');
+    require_once __DIR__ . "/../contexts/ProjectsContext.php";
     require_once __DIR__ . "/../contexts/ColumnsContext.php";
     require_once __DIR__ . "/../contexts/TasksContext.php";
 
     class ColumnsController {
         private ColumnsContext $columnsContext;
         private TasksContext $tasksContext;
+        private ProjectsContext $projectsContext;
+
         public array $errors = [];
 
         public function __construct() {
             $db = new DBConnect();
             $this->columnsContext = new ColumnsContext($db);
             $this->tasksContext = new TasksContext($db);
+            $this->projectsContext = new ProjectsContext($db);
         }
 
         private function addError(string $message): void {
@@ -19,8 +23,13 @@
         }
 
         // Создание столбца
-        public function createColumn(array $columnData): array {
+        public function createColumn(array $columnData, int $userId): array {
             try {
+                $role = $this->projectsContext->getUserRoleInProject($userId, $columnData['project_id']);
+                if (!in_array($role, ['creator', 'admin'])) {
+                    return ['success' => false, 'errors' => ['У вас нет прав для создания столбцов.']];
+                }
+                
                 $required = ['name', 'position', 'project_id'];
                 foreach ($required as $field) {
                     if (empty($columnData[$field])) {
@@ -57,12 +66,15 @@
         }
 
         // Удаление столбца с перемещением задач
-        public function deleteColumn(int $columnId, int $projectId): array {
+        public function deleteColumn(int $columnId, int $projectId, int $userId): array {
             try {
-                // Получаем все столбцы проекта
+                $role = $this->projectsContext->getUserRoleInProject($userId, $projectId);
+                if (!in_array($role, ['creator', 'admin'])) {
+                    return ['success' => false, 'errors' => ['У вас нет прав для удаления столбцов.']];
+                }
+                
                 $columns = $this->columnsContext->getColumnsByProject($projectId);
                 
-                // Найдем первый столбец, который не является удаляемым
                 $firstColumnId = null;
                 foreach ($columns as $column) {
                     if ($column['id'] != $columnId) {
@@ -71,11 +83,9 @@
                     }
                 }
                 
-                // Если нашли столбец для перемещения
                 if ($firstColumnId) {
                     $this->tasksContext->moveAllTasks($columnId, $firstColumnId);
                 } else {
-                    // Если это последний столбец, удаляем все задачи в нем
                     $this->tasksContext->deleteTasksByColumn($columnId);
                 }
 
@@ -99,8 +109,10 @@
         }
 
         public static function handleRequest() {
+            session_start();
             $controller = new self();
             $action = $_POST['action'] ?? '';
+            $userId = $_SESSION['user']['id'] ?? 0;
 
             try {
                 switch ($action) {
@@ -109,7 +121,7 @@
                             'name' => $_POST['name'],
                             'position' => $_POST['position'],
                             'project_id' => $_POST['project_id'],
-                        ]);
+                        ], $userId);
                         break;
                     case 'updateColumn':
                         $response = $controller->updateColumn(
@@ -122,12 +134,13 @@
                         break;
                     case 'deleteColumn':
                         $response = $controller->deleteColumn(
-                            $_POST['column_id'],
-                            $_POST['project_id']
+                            (int)$_POST['column_id'],
+                            (int)$_POST['project_id'],
+                            $userId
                         );
                         break;
                     case 'getColumnsByProject':
-                        $response = $controller->getColumnsByProject($_POST['project_id']);
+                        $response = $controller->getColumnsByProject((int)$_POST['project_id']);
                         break;
                     default:
                         $response = ['success' => false, 'errors' => ['Неверное действие']];
