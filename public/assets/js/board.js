@@ -545,7 +545,6 @@ const TaskManager = (() => {
 
     // Удаление участника
     async function removeProjectMember(userId) {
-        // Prevent default button behavior if inside a form
         event?.preventDefault?.();
 
         if (!confirm('Удалить участника из проекта?')) return;
@@ -635,7 +634,7 @@ const TaskManager = (() => {
         document.getElementById('deleteTaskBtn').style.display = isEditable ? 'block' : 'none';
         document.getElementById('editAddAssigneeBtn').style.display = isEditable ? 'block' : 'none';
         document.getElementById('addSubtaskBtn').style.display = isEditable ? 'block' : 'none';
-        document.querySelector('.add-subtask-fields').style.display = isEditable ? 'block' : 'none';
+        document.querySelector('.subtask-controls').style.display = isEditable ? 'block' : 'none';
         
         const removeButtons = document.querySelectorAll('#taskDetailsModal .remove-assignee, #taskDetailsModal .remove-subtask');
         removeButtons.forEach(btn => btn.style.display = isEditable ? 'inline-block' : 'none');

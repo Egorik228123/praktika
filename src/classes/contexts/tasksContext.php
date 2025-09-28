@@ -76,7 +76,7 @@
                     tasks.id, tasks.name
                 ORDER BY
                     tasks.id;
-                ", // Добавлен GROUP BY и ORDER BY для корректного отображения
+                ",
                 [$columnId]
             );
             return $result->fetch_all(MYSQLI_ASSOC);
@@ -87,7 +87,10 @@
                 "SELECT * FROM tasks WHERE id = ?",
                 [$taskId]
             );
-            return $result->fetch_object(Tasks::class) ?: null;
+            if ($data = $result->fetch_object()) {
+                return new Tasks($data);
+            }
+            return null;
         }
 
         public function getTaskWithDetails(int $taskId): array {
@@ -95,7 +98,7 @@
                 "SELECT * FROM tasks WHERE id = ?",
                 [$taskId]
             );
-            return $result->fetch_assoc() ?: []; // Возвращаем пустой массив, если задача не найдена
+            return $result->fetch_assoc() ?: [];
         }
 
         public function getTaskAssignees(int $taskId): array {
