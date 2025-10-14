@@ -231,11 +231,21 @@
         }
 
         public function isUserMemberOfProject(int $userId, int $projectId): bool {
+            $sql = "(
+                    SELECT 1 FROM projects WHERE id = ? AND is_public = 1
+                )
+                UNION ALL (
+                    SELECT 1 FROM project_roles WHERE id_user = ? AND id_project = ?
+                )
+                LIMIT 1
+            ";
+
             $result = $this->db->Query(
-                "SELECT 1 FROM project_roles WHERE id_user = ? AND id_project = ?",
-                [$userId, $projectId]
+                $sql,
+                [$projectId, $userId, $projectId]
             );
-            return $result->num_rows > 0;
+
+            return $result && $result->num_rows > 0;
         }
     }
 ?>
